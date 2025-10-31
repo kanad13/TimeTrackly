@@ -1,0 +1,20 @@
+{
+	"timer-123": {
+		"id": "timer-123",
+		"project": "Active Project",
+		"task": "Active Task",
+		"startTime": "2025-10-31T10:00:00.000Z",
+		"isPaused": false,
+		"accumulatedMs": 0,
+		"notes": "Currently running"
+	},
+	"timer-456": {
+		"id": "timer-456",
+		"project": "Paused Project",
+		"task": "Paused Task",
+		"startTime": null,
+		"isPaused": true,
+		"accumulatedMs": 5400000,
+		"notes": "Paused for lunch"
+	}
+}

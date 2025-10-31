@@ -1,15 +1,31 @@
 {
-	"name": "mttt-local-tracker",
-	"version": "1.0.0",
-	"description": "Multi-Task Time Tracker with local file persistence.",
-	"main": "server.js",
+	"name": "time-trackly",
+	"version": "2.0.0",
+	"description": "TimeTrackly - Your time, your data. A simple, private, and offline-first time tracker with local file persistence.",
+	"main": "server.cjs",
+	"type": "module",
 	"scripts": {
-		"start": "node server.js",
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"start": "node server.cjs",
+		"dev": "NODE_ENV=development node server.cjs",
+		"health": "curl -s http://localhost:13331/api/health | json_pp || curl -s http://localhost:13331/api/health",
+		"backup": "mkdir -p backups && cp mtt-*.json backups/backup-$(date +%Y%m%d-%H%M%S)/ 2>/dev/null || true",
+		"test": "npm run test:api && npm run test:e2e",
+		"test:unit": "node --test tests/unit/test-*.mjs",
+		"test:e2e": "node tests/e2e/test-ui-complete.cjs",
+		"test:api": "node tests/e2e/test-backend-api.cjs",
+		"test:headless": "HEADLESS=true node tests/e2e/test-ui-complete.cjs",
+		"test:watch": "node --test --watch tests/unit/test-*.mjs"
 	},
+	"keywords": [
+		"time-tracker",
+		"productivity",
+		"local-first",
+		"timer"
+	],
 	"author": "",
 	"license": "ISC",
-	"keywords": [
-		"time-tracker"
-	]
+	"devDependencies": {
+		"jsdom": "^27.1.0",
+		"puppeteer": "^24.27.0"
+	}
 }
