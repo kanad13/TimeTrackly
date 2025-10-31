@@ -263,23 +263,27 @@ export const renderActiveTimers = () => {
 				deleteButton.addEventListener("click", () => deleteTimer(activity.id));
 			}
 
-		// Add notes change handler
-		const notesTextarea = card.querySelector(`#notes-${activity.id}`);
-		notesTextarea.addEventListener("blur", async () => {
-			const newNotes = notesTextarea.value;
-			if (state.activeTimers[activity.id]) {
-				const previousNotes = state.activeTimers[activity.id].notes;
-				state.activeTimers[activity.id].notes = newNotes;
-				try {
-					await saveActiveStateToServer();
-				} catch (error) {
-					console.error("Error saving notes:", error);
-					state.activeTimers[activity.id].notes = previousNotes;
-					notesTextarea.value = previousNotes;
-					showNotification("Failed to save notes. Please try again.", "error");
+			// Add notes change handler
+			const notesTextarea = card.querySelector(`#notes-${activity.id}`);
+			notesTextarea.addEventListener("blur", async () => {
+				const newNotes = notesTextarea.value;
+				if (state.activeTimers[activity.id]) {
+					const previousNotes = state.activeTimers[activity.id].notes;
+					state.activeTimers[activity.id].notes = newNotes;
+					try {
+						await saveActiveStateToServer();
+					} catch (error) {
+						console.error("Error saving notes:", error);
+						state.activeTimers[activity.id].notes = previousNotes;
+						notesTextarea.value = previousNotes;
+						showNotification(
+							"Failed to save notes. Please try again.",
+							"error"
+						);
+					}
 				}
-			}
-		});			taskList.appendChild(card);
+			});
+			taskList.appendChild(card);
 		});
 		domElements.activeTimersList.appendChild(projectHeader);
 		domElements.activeTimersList.appendChild(taskList);
@@ -392,42 +396,43 @@ export const startNewTimer = async () => {
 	}
 };
 
-	/**
-	 * Toggles a timer between paused and running states
-	 * @param {string} id - UUID of the timer to toggle
-	 */
-	export const toggleTimer = async (id) => {
-		const timer = state.activeTimers[id];
-		if (!timer) return;
+/**
+ * Toggles a timer between paused and running states
+ * @param {string} id - UUID of the timer to toggle
+ */
+export const toggleTimer = async (id) => {
+	const timer = state.activeTimers[id];
+	if (!timer) return;
 
-		const previousState = {
-			isPaused: timer.isPaused,
-			startTime: timer.startTime,
-			accumulatedMs: timer.accumulatedMs,
-		};
+	const previousState = {
+		isPaused: timer.isPaused,
+		startTime: timer.startTime,
+		accumulatedMs: timer.accumulatedMs,
+	};
 
-		try {
-			if (timer.isPaused) {
-				timer.isPaused = false;
-				timer.startTime = new Date();
-			} else {
-				timer.accumulatedMs += Date.now() - timer.startTime.getTime();
-				timer.startTime = null;
-				timer.isPaused = true;
-			}
-
-			await saveActiveStateToServer();
-			renderActiveTimers();
-			startTimerDisplay();
-		} catch (error) {
-			console.error("Error toggling timer:", error);
-			// Rollback to previous state
-			timer.isPaused = previousState.isPaused;
-			timer.startTime = previousState.startTime;
-			timer.accumulatedMs = previousState.accumulatedMs;
-			showNotification("Failed to toggle timer. Please try again.", "error");
+	try {
+		if (timer.isPaused) {
+			timer.isPaused = false;
+			timer.startTime = new Date();
+		} else {
+			timer.accumulatedMs += Date.now() - timer.startTime.getTime();
+			timer.startTime = null;
+			timer.isPaused = true;
 		}
-	};/**
+
+		await saveActiveStateToServer();
+		renderActiveTimers();
+		startTimerDisplay();
+	} catch (error) {
+		console.error("Error toggling timer:", error);
+		// Rollback to previous state
+		timer.isPaused = previousState.isPaused;
+		timer.startTime = previousState.startTime;
+		timer.accumulatedMs = previousState.accumulatedMs;
+		showNotification("Failed to toggle timer. Please try again.", "error");
+	}
+};
+/**
  * Deletes a timer without saving it to history
  * @param {string} id - UUID of the timer to delete
  */
@@ -489,60 +494,60 @@ export const stopTimer = async (id) => {
 	populateSuggestions();
 };
 
-	/**
-	 * Exports all historical data as a CSV file
-	 * Includes computed duration in minutes
-	 */
-	export const exportData = () => {
-		if (!domElements) return;
+/**
+ * Exports all historical data as a CSV file
+ * Includes computed duration in minutes
+ */
+export const exportData = () => {
+	if (!domElements) return;
 
-		if (state.historicalEntries.length === 0) {
-			showNotification("No data to export.", "info");
-			return;
-		}
+	if (state.historicalEntries.length === 0) {
+		showNotification("No data to export.", "info");
+		return;
+	}
 
-		try {
-			domElements.exportButton.textContent = "Generating...";
-			domElements.exportButton.disabled = true;
+	try {
+		domElements.exportButton.textContent = "Generating...";
+		domElements.exportButton.disabled = true;
 
-			const headers = [
-				"project",
-				"task",
-				"endTime",
-				"durationSeconds",
-				"durationMinutes",
-				"totalDurationMs",
-				"notes",
-			];
-			const csvRows = [headers.join(",")];
-			state.historicalEntries.forEach((entry) => {
-				const row = {
-					...entry,
-					endTime: new Date(entry.endTime).toISOString(),
-					durationMinutes: (entry.durationSeconds / 60).toFixed(2),
-				};
-				const values = headers.map(
-					(header) => `"${(row[header] || "").toString().replace(/"/g, '""')}"`
-				);
-				csvRows.push(values.join(","));
-			});
+		const headers = [
+			"project",
+			"task",
+			"endTime",
+			"durationSeconds",
+			"durationMinutes",
+			"totalDurationMs",
+			"notes",
+		];
+		const csvRows = [headers.join(",")];
+		state.historicalEntries.forEach((entry) => {
+			const row = {
+				...entry,
+				endTime: new Date(entry.endTime).toISOString(),
+				durationMinutes: (entry.durationSeconds / 60).toFixed(2),
+			};
+			const values = headers.map(
+				(header) => `"${(row[header] || "").toString().replace(/"/g, '""')}"`
+			);
+			csvRows.push(values.join(","));
+		});
 
-			const blob = new Blob([csvRows.join("\n")], {
-				type: "text/csv;charset=utf-8;",
-			});
-			const link = document.createElement("a");
-			link.href = URL.createObjectURL(blob);
-			link.download = `time_tracker_export_${
-				new Date().toISOString().split("T")[0]
-			}.csv`;
-			link.click();
+		const blob = new Blob([csvRows.join("\n")], {
+			type: "text/csv;charset=utf-8;",
+		});
+		const link = document.createElement("a");
+		link.href = URL.createObjectURL(blob);
+		link.download = `time_tracker_export_${
+			new Date().toISOString().split("T")[0]
+		}.csv`;
+		link.click();
 
-			showNotification("Data exported successfully!", "success", 2000);
-		} catch (error) {
-			console.error("Error exporting data:", error);
-			showNotification("Failed to export data. Please try again.", "error");
-		} finally {
-			domElements.exportButton.textContent = "Export All Data (CSV)";
-			domElements.exportButton.disabled = false;
-		}
-	};
+		showNotification("Data exported successfully!", "success", 2000);
+	} catch (error) {
+		console.error("Error exporting data:", error);
+		showNotification("Failed to export data. Please try again.", "error");
+	} finally {
+		domElements.exportButton.textContent = "Export All Data (CSV)";
+		domElements.exportButton.disabled = false;
+	}
+};

@@ -266,22 +266,19 @@ test("Notes persistence: stores notes with text", () => {
 		notes: "This is a test note with some details",
 	};
 
-	assert.strictEqual(
-		timer.notes,
-		"This is a test note with some details"
-	);
+	assert.strictEqual(timer.notes, "This is a test note with some details");
 });
 
 test("Notes persistence: handles notes with special characters", () => {
 	const timer = {
 		project: "Project",
 		task: "Task",
-		notes: 'Notes with "quotes" and \'apostrophes\' and commas,',
+		notes: "Notes with \"quotes\" and 'apostrophes' and commas,",
 	};
 
 	assert.strictEqual(
 		timer.notes,
-		'Notes with "quotes" and \'apostrophes\' and commas,'
+		"Notes with \"quotes\" and 'apostrophes' and commas,"
 	);
 });
 
@@ -316,10 +313,7 @@ test("CSV export: handles commas in fields", () => {
 	);
 	const csvLine = values.join(",");
 
-	assert.strictEqual(
-		csvLine,
-		'"Project, Inc.","Task, Urgent","01:30:00"'
-	);
+	assert.strictEqual(csvLine, '"Project, Inc.","Task, Urgent","01:30:00"');
 });
 
 test("CSV export: formats durationMinutes correctly", () => {

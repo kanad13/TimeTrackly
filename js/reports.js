@@ -127,7 +127,9 @@ export const renderReportsView = () => {
 		reportsContent.classList.remove("hidden");
 
 		// Create project pie chart
-		const pieCtx = document.getElementById("project-pie-chart").getContext("2d");
+		const pieCtx = document
+			.getElementById("project-pie-chart")
+			.getContext("2d");
 		state.activeChartInstances.push(
 			new Chart(pieCtx, {
 				type: "doughnut",

@@ -195,19 +195,22 @@ _Clear error messages guide users to correct input issues_
 ### 4.1.1. Error Handling and Robustness
 
 - **Input Validation:** All user inputs are validated and sanitized before use
+
   - Project and task names are trimmed and deduplicated using case-insensitive comparison
   - Notes can contain any characters but are properly escaped in CSV exports
   - Invalid dates from server are handled gracefully with fallback to current time
-  
+
 - **State Rollback:** When operations fail, state is rolled back to previous state
+
   - Timer pause/resume: If save fails, timer state is reverted
   - Notes changes: If save fails, notes value is reverted to previous state
-  
+
 - **Error Notifications:** All errors are communicated to user via toast notifications
+
   - Failed timer operations show "Failed to toggle timer. Please try again."
   - Failed notes saves show "Failed to save notes. Please try again."
   - Export failures show "Failed to export data. Please try again."
-  
+
 - **Export Resilience:** CSV export uses try-finally to ensure button is re-enabled on success or failure
 
 ### 4.2. Backend Implementation
@@ -226,17 +229,19 @@ _Clear error messages guide users to correct input issues_
 ### 4.3. Frontend Reliability
 
 - **Error Handling:**
+
   - Comprehensive `try-catch` blocks with user-friendly notifications
   - Global `error` and `unhandledrejection` handlers
   - Graceful degradation when server unavailable
   - Report rendering protected against missing Chart.js library
-  
+
 - **Memory Management:**
+
   - `Visibility change` listener pauses timer updates when tab hidden
   - `Beforeunload` handler warns users about active timers
   - Proper cleanup of intervals and event listeners
   - Chart.js instances properly destroyed before creating new ones to prevent memory leaks
-  
+
 - **Input Safety:**
   - Sanitization removes dangerous characters (`<>"'`)
   - Length limits prevent excessive data entry (max 100 chars for project/task)
