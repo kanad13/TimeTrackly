@@ -247,7 +247,37 @@ We're NOT implementing (appropriate for this use case):
 
 ## 🔄 Change Log
 
-### 2025-10-31
+### 2025-10-31 - Session 2: UI Enhancements
+
+- **Notes/Comments Feature Added:**
+
+  - Added `notes` field to timer data structures (active and historical)
+  - Implemented textarea in each timer card for user notes
+  - Notes auto-save on blur event
+  - Notes included in CSV export with proper escaping
+  - Notes persist when stopping timers (saved to historical data)
+
+- **UI Organization Improvements:**
+
+  - Converted "Start New Timer" section to collapsible (collapsed by default)
+  - Converted "Active Timers" section to collapsible (expanded by default)
+  - Renamed "Data Management" to "Data Export" (collapsed by default)
+  - Color-coded sections: Indigo (new timer), Green (active), Gray (export)
+  - All sections use smooth CSS transitions with rotating chevron icons
+
+- **Testing Infrastructure:**
+
+  - Installed Puppeteer for automated testing
+  - Created comprehensive test suite (`test-features.js`)
+  - Generated visual regression screenshots
+  - All automated tests passing
+
+- **Documentation Updates:**
+  - Updated `architecture.md` with notes feature and UI sections
+  - Updated `REFACTORING.md` with session changes
+  - Updated `readme.md` to reflect new features
+
+### 2025-10-31 - Session 1: Refactoring
 
 - Created refactoring plan
 - Defined 5 phases with clear deliverables

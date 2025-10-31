@@ -82,6 +82,70 @@ const initializeApp = async () => {
 			.getElementById("tab-reports")
 			.addEventListener("click", () => switchTab("reports"));
 
+		// Setup Data Entry section collapse/expand (collapsed by default)
+		const dataEntryHeader = document.getElementById("data-entry-header");
+		const dataEntryContent = document.getElementById("data-entry-content");
+		const dataEntryIcon = document.getElementById("icon-data-entry");
+
+		dataEntryHeader.addEventListener("click", () => {
+			const isCollapsed = dataEntryContent.classList.contains("h-0");
+			if (isCollapsed) {
+				dataEntryContent.classList.remove("h-0");
+				dataEntryContent.style.height = `${dataEntryContent.scrollHeight}px`;
+				dataEntryIcon.classList.add("rotate-90");
+			} else {
+				dataEntryContent.style.height = "0";
+				dataEntryIcon.classList.remove("rotate-90");
+				dataEntryContent.addEventListener(
+					"transitionend",
+					() => dataEntryContent.classList.add("h-0"),
+					{ once: true }
+				);
+			}
+		});
+
+		// Setup Active Timers section collapse/expand (expanded by default)
+		const activeTimersHeader = document.getElementById("active-timers-header");
+		const activeTimersContent = document.getElementById(
+			"active-timers-content"
+		);
+		const activeTimersIcon = document.getElementById("icon-active-timers");
+
+		activeTimersHeader.addEventListener("click", () => {
+			const isExpanded =
+				activeTimersContent.style.height !== "0px" &&
+				activeTimersContent.style.height !== "";
+			if (isExpanded) {
+				activeTimersContent.style.height = "0";
+				activeTimersIcon.classList.remove("rotate-90");
+			} else {
+				activeTimersContent.style.height = "auto";
+				activeTimersIcon.classList.add("rotate-90");
+			}
+		});
+
+		// Setup Data Export section collapse/expand (collapsed by default)
+		const dataExportHeader = document.getElementById("data-export-header");
+		const dataExportContent = document.getElementById("data-export-content");
+		const dataExportIcon = document.getElementById("icon-data-export");
+
+		dataExportHeader.addEventListener("click", () => {
+			const isCollapsed = dataExportContent.classList.contains("h-0");
+			if (isCollapsed) {
+				dataExportContent.classList.remove("h-0");
+				dataExportContent.style.height = `${dataExportContent.scrollHeight}px`;
+				dataExportIcon.classList.add("rotate-90");
+			} else {
+				dataExportContent.style.height = "0";
+				dataExportIcon.classList.remove("rotate-90");
+				dataExportContent.addEventListener(
+					"transitionend",
+					() => dataExportContent.classList.add("h-0"),
+					{ once: true }
+				);
+			}
+		});
+
 		// Load data from server
 		await loadSuggestionsFromServer();
 		await loadDataFromServer();

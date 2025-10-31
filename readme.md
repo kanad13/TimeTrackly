@@ -10,6 +10,10 @@
 - **Session Persistence:** Running and paused timers are saved instantly to the local server
   - If you close your browser or restart your computer, your active timers will be exactly as you left them when you reopen the app
 - **Essential Controls:** Ability to Start, Pause, Resume, Stop (Save), and Delete (Discard) active tasks
+- **Notes & Comments:** Add detailed notes to each timer for comprehensive record-keeping
+  - Notes auto-save and are included in CSV exports
+- **Collapsible UI Sections:** Start New Timer, Active Timers, and Data Export sections can be collapsed to reduce clutter
+  - Smart defaults keep focus on active work
 - **In-App Analytics:** A dedicated Reports tab provides real-time visualizations, including Project Time Distribution and Daily Time Logged charts
 - **Smart, Configurable Input:** Autocomplete suggestions are populated from a user-editable `mtt-suggestions.json` file and your own recent entries
 - **Data Integrity:** Prevents concurrent tracking of the exact same Project / Task combination

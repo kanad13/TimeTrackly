@@ -1,1 +1,83 @@
-[]
+[
+  {
+    "project": "Test Project",
+    "task": "Test Task",
+    "totalDurationMs": 2704,
+    "durationSeconds": 3,
+    "endTime": "2025-10-31T08:37:23.081Z",
+    "createdAt": "2025-10-31T08:37:23.081Z",
+    "notes": "This is a test note for the timer. It supports multiple lines and special characters!"
+  },
+  {
+    "project": "Test Project",
+    "task": "Test Task",
+    "totalDurationMs": 26113,
+    "durationSeconds": 26,
+    "endTime": "2025-10-31T08:40:20.205Z",
+    "createdAt": "2025-10-31T08:40:20.205Z",
+    "notes": "asdasdas"
+  },
+  {
+    "project": "Project B",
+    "task": "Task P",
+    "totalDurationMs": 41384,
+    "durationSeconds": 41,
+    "endTime": "2025-10-31T08:40:38.275Z",
+    "createdAt": "2025-10-31T08:40:38.275Z",
+    "notes": "asdasdasd"
+  },
+  {
+    "project": "Project B",
+    "task": "Task Q",
+    "totalDurationMs": 40318,
+    "durationSeconds": 40,
+    "endTime": "2025-10-31T08:40:39.842Z",
+    "createdAt": "2025-10-31T08:40:39.842Z",
+    "notes": "asdasdasd"
+  },
+  {
+    "project": "Demo Project",
+    "task": "Task with Notes",
+    "totalDurationMs": 149131,
+    "durationSeconds": 149,
+    "endTime": "2025-10-31T08:40:41.529Z",
+    "createdAt": "2025-10-31T08:40:41.529Z",
+    "notes": "Working on implementing the notes feature. This textarea allows users to add detailed comments about their work, including:\n- What they accomplished\n- Any blockers or issues\n- Next steps"
+  },
+  {
+    "project": "Project B",
+    "task": "Task Q",
+    "totalDurationMs": 4658,
+    "durationSeconds": 5,
+    "endTime": "2025-10-31T08:53:04.733Z",
+    "createdAt": "2025-10-31T08:53:04.733Z",
+    "notes": ""
+  },
+  {
+    "project": "Final Test",
+    "task": "UI Refinements Complete",
+    "totalDurationMs": 187195,
+    "durationSeconds": 187,
+    "endTime": "2025-10-31T08:53:07.861Z",
+    "createdAt": "2025-10-31T08:53:07.861Z",
+    "notes": ""
+  },
+  {
+    "project": "Final Test",
+    "task": "UI Refinements Complete",
+    "totalDurationMs": 3070,
+    "durationSeconds": 3,
+    "endTime": "2025-10-31T08:53:14.414Z",
+    "createdAt": "2025-10-31T08:53:14.414Z",
+    "notes": ""
+  },
+  {
+    "project": "Project B",
+    "task": "Task Q",
+    "totalDurationMs": 5598,
+    "durationSeconds": 6,
+    "endTime": "2025-10-31T08:54:01.555Z",
+    "createdAt": "2025-10-31T08:54:01.555Z",
+    "notes": "<dasdasasdasdasd"
+  }
+]

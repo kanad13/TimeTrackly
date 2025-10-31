@@ -78,6 +78,7 @@
 | `durationSeconds` | Number | Human-readable, rounded duration at save time     |
 | `endTime`         | String | Time when stopped, stored as an `ISO 8601` string |
 | `createdAt`       | String | Time when created, stored as an `ISO 8601` string |
+| `notes`           | String | User-entered notes/comments about the task        |
 
 - **Data Model (Active Timer in `mtt-active-state.json`):**
   - The file contains a single `JSON` object where each key is a `UUID`
@@ -89,6 +90,7 @@
 | `startTime`     | String  | `ISO 8601` string of when the timer was last resumed, or `null`.        |
 | `accumulatedMs` | Number  | Milliseconds accumulated while the timer was running but is now paused. |
 | `isPaused`      | Boolean | `true` if the timer is currently paused.                                |
+| `notes`         | String  | User-entered notes/comments about the task (editable while running).    |
 
 - **Data Flow (Event-Driven Synchronization):**
   - The application uses an `event-driven` model to ensure the server's state is always synchronized with the client's actions, providing high data durability
@@ -128,14 +130,31 @@
   - **UX:** Paused timers receive a visual indicator (`orange border`) and their buttons switch to `Resume`
 - **Delete (Discard):** Allows users to remove accidental or incomplete timers from the active list without generating a permanent record
   - This action also syncs with the server
+- **Notes/Comments:** Each timer includes a textarea for adding detailed notes or comments
+  - **Mechanism:** Notes are stored in the `notes` field and auto-saved on blur (when user clicks away)
+  - **UX:** Notes persist when stopping timers and are included in CSV exports for comprehensive record-keeping
 
-### 3.3. Smart Input
+### 3.3. Collapsible UI Sections
+
+- The interface uses collapsible sections to reduce visual clutter and improve focus
+- **Start New Timer Section:** Contains the input field and start button
+  - **Default State:** Collapsed to minimize distraction once timers are running
+  - **Color:** Indigo background for visibility
+- **Active Timers Section:** Displays all running and paused timers
+  - **Default State:** Expanded (main feature of the app)
+  - **Color:** Green background to indicate active/running state
+- **Data Export Section:** Contains the CSV export button
+  - **Default State:** Collapsed (infrequently used feature)
+  - **Color:** Gray background for utility functions
+- All sections use smooth CSS transitions and rotating chevron icons for visual feedback
+
+### 3.4. Smart Input
 
 - **Mechanism:** The `<datalist>` dynamically provides suggestions by combining a user-editable `mtt-suggestions.json` file and the most recent unique `Project / Task` strings from the `historicalEntries` data
 - **UX Goal:** Reduce typing and ensure consistency in data entry, vital for accurate reporting
   - Users can customize their primary suggestions by editing the `JSON` file and refreshing the browser
 
-### 3.4. Reports View
+### 3.5. Reports View
 
 - **Pattern:** A separate `tabbed interface` switches between the active Tracker and the `Reports` view
 - **Implementation:** The `reports.js` module uses `Chart.js` via `CDN` to dynamically generate two charts based on all historical data loaded from the server:

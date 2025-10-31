@@ -19,5 +19,8 @@
 		"timer"
 	],
 	"author": "",
-	"license": "ISC"
+	"license": "ISC",
+	"devDependencies": {
+		"puppeteer": "^24.27.0"
+	}
 }

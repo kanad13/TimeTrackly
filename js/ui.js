@@ -9,8 +9,9 @@
  * 1. DOM element manipulation (reading inputs, rendering timers)
  * 2. Timer lifecycle management (start, pause, resume, stop, delete)
  * 3. User input validation and sanitization
- * 4. CSV export generation
- * 5. Real-time timer display updates
+ * 4. Notes/comments management for active timers
+ * 5. CSV export generation (including notes)
+ * 6. Real-time timer display updates
  *
  * UI UPDATE FLOW:
  * User Action → Handler Function → Update State → Save to Server → Re-render UI
@@ -18,13 +19,20 @@
  * Example: User clicks "Stop"
  * 1. stopTimer(id) called
  * 2. Calculate final duration, remove from activeTimers
- * 3. Add to historicalEntries
+ * 3. Add to historicalEntries (including notes)
  * 4. await saveActiveStateToServer() + saveDataToServer()
  * 5. renderActiveTimers() updates DOM
  * 6. populateSuggestions() adds task to dropdown
  *
  * TIMER LIFECYCLE:
- * Created → Running ⇄ Paused → Stopped (saved) or Deleted (discarded)
+ * Created → Running ⇄ Paused → Stopped (saved with notes) or Deleted (discarded)
+ *
+ * NOTES FEATURE:
+ * Each timer has an associated textarea for notes/comments.
+ * - Notes auto-save on blur (when user clicks away)
+ * - Notes persist when stopping timers (included in historical entries)
+ * - Notes are included in CSV exports with proper escaping
+ * - Empty notes are stored as empty strings
  *
  * DUPLICATE DETECTION:
  * Uses lowercase "project:task" keys to prevent duplicate timers.
@@ -34,6 +42,7 @@
  * CSV EXPORT FORMAT:
  * Includes computed durationMinutes for Excel/Sheets compatibility.
  * Double-quotes are escaped to prevent CSV injection.
+ * Notes column includes multiline text with proper escaping.
  * Filename includes ISO date for easy organization.
  *
  * SINGLE-USER CONTEXT:
@@ -188,7 +197,7 @@ export const renderActiveTimers = () => {
 			const card = document.createElement("div");
 			card.id = `timer-card-${activity.id}`;
 			let cardClasses =
-				"flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-3 rounded-lg shadow-sm border border-gray-100 ml-4";
+				"flex flex-col bg-white p-3 rounded-lg shadow-sm border border-gray-100 ml-4";
 			if (activity.isPaused) {
 				cardClasses += " paused-card";
 			}
@@ -198,31 +207,41 @@ export const renderActiveTimers = () => {
 				? '<span class="text-orange-500 font-bold mr-2">(Paused)</span>'
 				: "";
 			card.innerHTML = `
-				<div class="flex flex-col text-left mb-2 sm:mb-0">
-					<span class="text-sm font-medium text-gray-700">${statusText} ${
+				<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2">
+					<div class="flex flex-col text-left mb-2 sm:mb-0">
+						<span class="text-sm font-medium text-gray-700">${statusText} ${
 				activity.task
 			}</span>
-					<span class="text-xs text-gray-400">${
-						activity.isPaused ? "Accumulated" : "Running Since"
-					} ${
+						<span class="text-xs text-gray-400">${
+							activity.isPaused ? "Accumulated" : "Running Since"
+						} ${
 				activity.startTime ? activity.startTime.toLocaleTimeString() : "N/A"
 			}</span>
-				</div>
-				<div class="flex items-center space-x-2.5 mt-2 sm:mt-0">
-					<span id="duration-${
-						activity.id
-					}" class="text-lg font-mono text-gray-800 w-24 text-right flex-shrink-0">${formatDuration(
+					</div>
+					<div class="flex items-center space-x-2.5 mt-2 sm:mt-0">
+						<span id="duration-${
+							activity.id
+						}" class="text-lg font-mono text-gray-800 w-24 text-right flex-shrink-0">${formatDuration(
 				Math.floor(calculateElapsedMs(activity) / CONSTANTS.MS_PER_SECOND)
 			)}</span>
-					<button data-action="toggle" class="${
-						activity.isPaused
-							? "bg-green-500 hover:bg-green-600"
-							: "bg-yellow-500 hover:bg-yellow-600"
-					} text-white text-xs px-3 py-1 rounded-lg transition duration-150 shadow-sm flex-shrink-0">${
+						<button data-action="toggle" class="${
+							activity.isPaused
+								? "bg-green-500 hover:bg-green-600"
+								: "bg-yellow-500 hover:bg-yellow-600"
+						} text-white text-xs px-3 py-1 rounded-lg transition duration-150 shadow-sm flex-shrink-0">${
 				activity.isPaused ? "Resume" : "Pause"
 			}</button>
-					<button data-action="stop" class="bg-red-500 text-white text-xs px-3 py-1 rounded-lg hover:bg-red-600 transition duration-150 shadow-sm flex-shrink-0">Stop</button>
-					<button data-action="delete" class="bg-gray-400 text-white text-xs px-3 py-1 rounded-lg hover:bg-gray-500 transition duration-150 shadow-sm flex-shrink-0">Delete</button>
+						<button data-action="stop" class="bg-red-500 text-white text-xs px-3 py-1 rounded-lg hover:bg-red-600 transition duration-150 shadow-sm flex-shrink-0">Stop</button>
+						<button data-action="delete" class="bg-gray-400 text-white text-xs px-3 py-1 rounded-lg hover:bg-gray-500 transition duration-150 shadow-sm flex-shrink-0">Delete</button>
+					</div>
+				</div>
+				<div class="mt-2">
+					<textarea
+						id="notes-${activity.id}"
+						placeholder="Add notes or comments..."
+						class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+						rows="2"
+					>${activity.notes || ""}</textarea>
 				</div>
 			`;
 
@@ -235,6 +254,16 @@ export const renderActiveTimers = () => {
 			card
 				.querySelector('[data-action="delete"]')
 				.addEventListener("click", () => deleteTimer(activity.id));
+
+			// Add notes change handler
+			const notesTextarea = card.querySelector(`#notes-${activity.id}`);
+			notesTextarea.addEventListener("blur", async () => {
+				const newNotes = notesTextarea.value;
+				if (state.activeTimers[activity.id]) {
+					state.activeTimers[activity.id].notes = newNotes;
+					await saveActiveStateToServer();
+				}
+			});
 
 			taskList.appendChild(card);
 		});
@@ -333,6 +362,7 @@ export const startNewTimer = async () => {
 		startTime: new Date(),
 		accumulatedMs: 0,
 		isPaused: false,
+		notes: "",
 	};
 
 	domElements.topicInput.value = "";
@@ -411,6 +441,7 @@ export const stopTimer = async (id) => {
 		durationSeconds: Math.round(finalDurationMs / CONSTANTS.MS_PER_SECOND),
 		endTime: endTime.toISOString(),
 		createdAt: new Date().toISOString(),
+		notes: activity.notes || "",
 	};
 
 	state.historicalEntries.push(newEntry);
@@ -452,6 +483,7 @@ export const exportData = () => {
 		"durationSeconds",
 		"durationMinutes",
 		"totalDurationMs",
+		"notes",
 	];
 	const csvRows = [headers.join(",")];
 	state.historicalEntries.forEach((entry) => {
