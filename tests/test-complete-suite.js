@@ -58,7 +58,7 @@ async function testInitialLoad(page) {
 	const reportsTab = await page.$("#tab-reports");
 
 	if (!app) throw new Error("Main app container not found");
-	if (title !== "Multi-Task Tracker") throw new Error("Title incorrect");
+	if (title !== "Time Tracker") throw new Error("Title incorrect");
 	if (!trackerTab || !reportsTab) throw new Error("Tabs not found");
 
 	await page.screenshot({
