@@ -28,25 +28,25 @@ tests/
 
 ## Current Test Coverage
 
-| Suite         | Tests | Status                           |
-| ------------- | ----- | -------------------------------- |
-| Backend API   | 23/23 | ✅ All passing                   |
-| E2E UI        | 12/12 | ✅ All passing                   |
-| Frontend Unit | ~68   | 🔄 In Review (see note below)    |
+| Suite         | Tests | Status                        |
+| ------------- | ----- | ----------------------------- |
+| Backend API   | 23/23 | ✅ All passing                |
+| E2E UI        | 12/12 | ✅ All passing                |
+| Frontend Unit | ~68   | 🔄 In Review (unit tests temporarily disabled; see below) |
+
 
 ### ⚠️ Unit Tests Status
 
-**Current:** Frontend unit tests are in review. We prioritize E2E and API tests for now because they cover all critical user workflows.
+**Current:** Frontend unit tests (~68) are temporarily disabled due to ES6 module and JSDOM compatibility issues. All critical user workflows are fully covered by E2E and API tests.
 
 **What's Covered:**
+
 - ✅ All backend API endpoints (health, suggestions, data, active-state)
 - ✅ All critical UI workflows (start, pause, resume, stop, delete, notes, export, persistence)
 - ✅ Error handling and validation
 - ✅ Responsive design across viewport sizes
 
-**Next Steps:** Unit test suite will be re-enabled with improved module compatibility.
-
-For details on re-enabling unit tests, see the `docs/` folder and `package.json` scripts.
+**Next Steps:** Unit test suite will be re-enabled once module compatibility is resolved. Track progress in the `docs/` folder and `package.json` scripts.
 
 ---
 
