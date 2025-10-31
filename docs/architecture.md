@@ -6,7 +6,7 @@
 ## 1. Design Philosophy: Single-User, Local-First
 
 - **Core Principle:** `TimeTrackly` is designed explicitly for single-user, local-only operation
-  - This is not a limitation—it's an intentional design choice that shapes every architectural decision
+  - This is not a limitation - it's an intentional design choice that shapes every architectural decision
 
 ### 1.1. Why Single-User, Local-First?
 
@@ -21,7 +21,7 @@
 ### 1.2. Architectural Implications
 
 - This design philosophy means:
-  - **No Enterprise Complexity:** Features like advanced security controls, distributed systems patterns, or horizontal scaling are intentionally absent—they would add complexity without providing value for single-user use
+  - **No Enterprise Complexity:** Features like advanced security controls, distributed systems patterns, or horizontal scaling are intentionally absent - they would add complexity without providing value for single-user use
   - **Simple File Locking:** Basic file locking suffices since only one user accesses the system
     - No need for distributed locks or complex concurrency controls
   - **Git as Backup:** Since the application runs in a Git repository, version control serves as the backup and recovery mechanism

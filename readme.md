@@ -2,7 +2,7 @@
 
 > **Stop Sharing Your Work Hours with Cloud Companies.** Track your time privately, on your machine, forever.
 
-TimeTrackly is a personal time tracker that runs entirely on your computer—no sign-ups, no data collection, zero cloud dependencies. Just you, your time, and a beautifully simple interface. Your data never leaves your machine.
+TimeTrackly is a personal time tracker that runs entirely on your computer - no sign-ups, no data collection, zero cloud dependencies. Just you, your time, and a beautifully simple interface. Your data never leaves your machine.
 
 ![](/assets/010-ui_initial_load.png)
 _Clean, Material Design-inspired interface with collapsible sections_
