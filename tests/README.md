@@ -1,6 +1,6 @@
 # Testing Guide
 
-Practical guide for writing, maintaining, and executing tests for the Multi-Task Time Tracker.
+Practical guide for writing, maintaining, and executing tests for TimeTrackly.
 
 ## Quick Start
 

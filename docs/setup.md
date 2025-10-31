@@ -1,6 +1,6 @@
 # Local Setup and Execution Guide
 
-- The **Multi-Task Time Tracker (MTTT)** runs as a local application on your machine using Node.js
+- **TimeTrackly** runs as a local application on your machine using Node.js
 - The application features a modular architecture with robust error handling to ensure your data remains private and provides a consistent experience across all browsers
 
 ![](/assets/010-ui_initial_load.png)
@@ -13,7 +13,7 @@ _The clean, Material Design-inspired interface after setup_
 
 ## 2. First-Time Setup
 
-- **Open Terminal:** Navigate to the project directory (`mttt-tracker`) in your terminal or command prompt
+- **Open Terminal:** Navigate to the project directory (`time-tracker`) in your terminal or command prompt
 - **Install Dependencies:** Run the following command
   - Note: This project has no external dependencies, but this is a standard step
 
@@ -37,6 +37,9 @@ npm start
 
 - **Access the App:** Open your web browser and navigate to `http://localhost:13331`
 - **Stop the Server:** Go back to the terminal and press `Ctrl + C`
+- If you get an error like "port already in use", you can do either of 2 things:
+  - Find the existing process using the port and terminate it with the command `lsof -ti:13331 | xargs kill -9` OR
+  - Change the port in `server.cjs` file
 
 ### 3.2. Development Mode (With detailed logging)
 
@@ -58,13 +61,13 @@ npm run dev
   ```
 - **Start the Server with PM2:** In the project directory, run:
   ```bash
-  pm2 start server.js --name "mttt-tracker"
+  pm2 start server.cjs --name "time-trackly"
   ```
 - **Manage the Process:**
   - **View Status:** `pm2 list`
-  - **Stop the Server:** `pm2 stop mttt-tracker`
-  - **Restart the Server:** `pm2 restart mttt-tracker`
-  - **View Logs:** `pm2 logs mttt-tracker`
+  - **Stop the Server:** `pm2 stop time-trackly`
+  - **Restart the Server:** `pm2 restart time-trackly`
+  - **View Logs:** `pm2 logs time-trackly`
 - **Save the Process:** To make `PM2` automatically restart the server after a system reboot, run:
   ```bash
   pm2 save
@@ -107,4 +110,4 @@ npm run backup
 
 Once running, you can track time across multiple projects simultaneously:
 
-- ![](/assets/020-ui_timer_with_notes.png)
+- ![](/assets/010-ui_initial_load.png)

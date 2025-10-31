@@ -1,11 +1,11 @@
 # Development Guide and Architecture Deep Dive
 
-- This document consolidates the architectural constraints, design rationale, and strategic roadmap for the **Multi-Task Time Tracker (MTTT)**
+- This document consolidates the architectural constraints, design rationale, and strategic roadmap for **TimeTrackly**
 - It serves as the definitive guide for current and future developers, including AI agents
 
 ## 1. Design Philosophy: Single-User, Local-First
 
-- **Core Principle:** `MTTT` is designed explicitly for single-user, local-only operation
+- **Core Principle:** `TimeTrackly` is designed explicitly for single-user, local-only operation
   - This is not a limitation—it's an intentional design choice that shapes every architectural decision
 
 ### 1.1. Why Single-User, Local-First?
@@ -34,7 +34,7 @@
 
 ## 2. Architectural Model: Local Client-Server
 
-- The `MTTT` operates on a self-contained, local client-server model, without any external cloud dependencies
+- `TimeTrackly` operates on a self-contained, local client-server model, without any external cloud dependencies
 - The server acts as the definitive source of truth for all application data, both in-progress and completed
 
 ### 2.1. Core Components

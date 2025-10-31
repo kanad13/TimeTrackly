@@ -1,5 +1,5 @@
 /**
- * MTTT Local Server - Multi-Task Time Tracker Backend
+ * TimeTrackly Local Server - Backend
  *
  * ARCHITECTURE OVERVIEW:
  * This is a simple, local-only Node.js HTTP server designed for single-user operation.
@@ -476,11 +476,11 @@ const startServer = async () => {
 	const server = http.createServer(requestHandler);
 
 	server.listen(PORT, "127.0.0.1", () => {
-		log.info("MTTT Server started successfully", {
+		log.info("TimeTrackly Server started successfully", {
 			port: PORT,
 			url: `http://localhost:${PORT}`,
 		});
-		console.log(`✅ MTTT Server is running.`);
+		console.log(`✅ TimeTrackly Server is running.`);
 		console.log(
 			`   Open your browser and navigate to http://localhost:${PORT}`
 		);

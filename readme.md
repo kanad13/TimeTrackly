@@ -1,8 +1,8 @@
-# Multi-Task Time Tracker (MTTT)
+# TimeTrackly
 
 > **Your Time, Your Data.** A simple, private, and offline-first time tracker.
 
-MTTT is a modern time tracker built on a single principle: **your data belongs to you.** It runs entirely on your local machine, has zero external dependencies, and never sends your information anywhere. It's designed for developers, freelancers, and anyone who wants a reliable, private tool to track their work without compromise.
+TimeTrackly is a modern time tracker built on a single principle: **your data belongs to you.** It runs entirely on your local machine, has zero external dependencies, and never sends your information anywhere. It's designed for developers, freelancers, and anyone who wants a reliable, private tool to track their work without compromise.
 
 ![](/assets/010-ui_initial_load.png)
 _Clean, Material Design-inspired interface with collapsible sections_
@@ -25,7 +25,6 @@ _Clean, Material Design-inspired interface with collapsible sections_
 - Track multiple tasks simultaneously with real-time duration display
 - Start, Pause, Resume, Stop (Save), and Delete (Discard) controls for each timer
 - Add notes to tasks that auto-save and export with your data
-- ![](/assets/020-ui_timer_with_notes.png)
 
 ### Reports & Analytics
 
@@ -40,7 +39,7 @@ Once the server is running, the workflow is simple and intuitive.
 
 - **Enter a Task:** In the input field, type the task you want to track using the `Project / Task` format.
 - **Start the Timer:** Click the **Start** button to see a new timer appear under the appropriate project.
-- **Track Multiple Tasks:** Run as many timers as you need concurrently. MTTT will group them by project.
+- **Track Multiple Tasks:** Run as many timers as you need concurrently. TimeTrackly will group them by project.
 - **Stop and Save:** When a task is complete, click **Stop**. The timer is removed from the active list and its data is permanently saved to `mtt-data.json`.
 
 ### 2.2. Managing Active Timers

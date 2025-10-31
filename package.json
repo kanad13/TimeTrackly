@@ -1,7 +1,7 @@
 {
-	"name": "mttt-local-tracker",
+	"name": "time-trackly",
 	"version": "2.0.0",
-	"description": "Multi-Task Time Tracker with local file persistence - Refactored and improved.",
+	"description": "TimeTrackly - Your time, your data. A simple, private, and offline-first time tracker with local file persistence.",
 	"main": "server.cjs",
 	"type": "module",
 	"scripts": {

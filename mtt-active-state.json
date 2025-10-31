@@ -1,18 +1,1 @@
-{
-  "fb7d1a5f-4489-4ad9-9a60-d4ec726b18df": {
-    "project": "Demo Project",
-    "task": "Task with Notes",
-    "startTime": null,
-    "accumulatedMs": 195282,
-    "isPaused": true,
-    "notes": "Mellow World!"
-  },
-  "753d9ee8-1cac-4784-b41c-f46349684c16": {
-    "project": "Test Project",
-    "task": "Test Task",
-    "startTime": "2025-10-31T12:16:10.980Z",
-    "accumulatedMs": 0,
-    "isPaused": false,
-    "notes": "Hello World!"
-  }
-}
+{}
