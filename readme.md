@@ -10,12 +10,14 @@ _Clean, Material Design-inspired interface with collapsible sections_
 ## Why TimeTrackly?
 
 Existing time trackers require:
+
 - ❌ Creating an account and remembering another password
 - ❌ Uploading your work data to someone else's servers
 - ❌ Trusting a third party with your productivity patterns
 - ❌ Dealing with ads, paywalls, or "freemium" upsells
 
 TimeTrackly gives you:
+
 - ✅ **100% Privacy** – Your data stays on your computer, always
 - ✅ **No Setup Friction** – Start tracking in 30 seconds (literally)
 - ✅ **Always Available** – Works offline; no internet required
@@ -125,13 +127,14 @@ Your data is already being saved locally to `mtt-data.json`.
 
 We're serious about reliability. Every major path is tested:
 
-| Suite         | Tests  | Status       |
-| ------------- | ------ | ------------ |
-| Backend API   | 23/23  | ✅ Passing   |
-| E2E UI        | 12/12  | ✅ Passing   |
-| Frontend Unit | ~68    | 🔄 In Review |
+| Suite         | Tests | Status       |
+| ------------- | ----- | ------------ |
+| Backend API   | 23/23 | ✅ Passing   |
+| E2E UI        | 12/12 | ✅ Passing   |
+| Frontend Unit | ~68   | 🔄 In Review |
 
 **Run tests locally:**
+
 ```bash
 npm test              # All tests
 npm run test:api      # Backend API only

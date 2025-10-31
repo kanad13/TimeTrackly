@@ -28,12 +28,11 @@ tests/
 
 ## Current Test Coverage
 
-| Suite         | Tests | Status                        |
-| ------------- | ----- | ----------------------------- |
-| Backend API   | 23/23 | ✅ All passing                |
-| E2E UI        | 12/12 | ✅ All passing                |
+| Suite         | Tests | Status                                                    |
+| ------------- | ----- | --------------------------------------------------------- |
+| Backend API   | 23/23 | ✅ All passing                                            |
+| E2E UI        | 12/12 | ✅ All passing                                            |
 | Frontend Unit | ~68   | 🔄 In Review (unit tests temporarily disabled; see below) |
-
 
 ### ⚠️ Unit Tests Status
 
