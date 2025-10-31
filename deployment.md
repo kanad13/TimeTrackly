@@ -20,7 +20,7 @@ There are two ways to run the server:
 
 1.  **Start the Server:** In your terminal, run:
     `npm start`
-2.  **Access the App:** Open your web browser and navigate to `http://localhost:3000`.
+2.  **Access the App:** Open your web browser and navigate to `http://localhost:13331`.
 3.  To stop the server, go back to the terminal and press `Ctrl + C`.
 
 ### B) Background Mode with PM2 (For continuous use)
