@@ -119,7 +119,7 @@
 	<!-- Local Application Logic -->
 	<script>
 		// --- Global State ---
-		let historicalEntries = []; // This will hold all data from mtt-data.json
+		let historicalEntries = []; // Holds all completed data from mtt-data.json
 		let activeTimers = {}; // { uuid: { project, task, startTime, accumulatedMs, isPaused } }
 		let timerInterval = null;
 		let activeChartInstances = []; // To destroy and recreate charts
@@ -142,9 +142,7 @@
 		const loadDataFromServer = async () => {
 			try {
 				const response = await fetch("/api/data");
-				if (!response.ok) {
-					throw new Error(`Server responded with ${response.status}`);
-				}
+				if (!response.ok) throw new Error(`Server responded with ${response.status}`);
 				const data = await response.json();
 				historicalEntries = data.map((entry) => ({
 					...entry,
@@ -164,9 +162,50 @@
 					body: JSON.stringify(historicalEntries, null, 2),
 				});
 			} catch (error) {
-				console.error("Error saving data:", error);
-				// Optionally show a "failed to save" UI indicator
+				console.error("Error saving historical data:", error);
 			}
+		};
+
+		const loadActiveStateFromServer = async () => {
+			try {
+				const response = await fetch("/api/active-state");
+				if (!response.ok) throw new Error(`Server responded with ${response.status}`);
+				const savedTimers = await response.json();
+				activeTimers = {}; // Clear existing state before loading
+				if (savedTimers && Object.keys(savedTimers).length > 0) {
+					for (const id in savedTimers) {
+						const timer = savedTimers[id];
+						timer.startTime = timer.startTime ? new Date(timer.startTime) : null;
+						activeTimers[id] = timer;
+					}
+				}
+			} catch (error) {
+				console.error("Could not load active state from server. Starting fresh.", error);
+				activeTimers = {}; // On failure, ensure state is clean
+			}
+		};
+
+		const saveActiveStateToServer = async () => {
+			const serializableTimers = {};
+			for (const id in activeTimers) {
+				const timer = activeTimers[id];
+				serializableTimers[id] = {
+					...timer,
+					startTime: timer.startTime ? timer.startTime.toISOString() : null,
+				};
+			}
+			try {
+				await fetch("/api/active-state", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify(serializableTimers, null, 2),
+				});
+			} catch (error) {
+				console.error("Error saving active state:", error);
+			}
+			// This part is UI-related and can run even if the save fails
+			activeCount.textContent = Object.keys(activeTimers).length;
+			noActiveMessage.classList.toggle('hidden', Object.keys(activeTimers).length > 0);
 		};
 
 		// --- Utility Functions ---
@@ -190,30 +229,18 @@
 		};
 
 		const getDistinctColors = (count) => {
-			const colors = [
-				'#4f46e5', '#f97316', '#10b981', '#ef4444', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'
-			];
+			const colors = ['#4f46e5', '#f97316', '#10b981', '#ef4444', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'];
 			const result = [];
-			for (let i = 0; i < count; i++) {
-				result.push(colors[i % colors.length]);
-			}
+			for (let i = 0; i < count; i++) result.push(colors[i % colors.length]);
 			return result;
 		};
 
 		// --- Datalist and Suggestions ---
-		const HARDCODED_SUGGESTIONS = [
-			"Project Gemini / Coding",
-			"Project Gemini / Documentation",
-			"Internal Admin / Meetings",
-			"Internal Admin / Email Response",
-			"Client X / Proposal Draft",
-			"Learning / Tutorial Videos"
-		];
+		const HARDCODED_SUGGESTIONS = ["Project Gemini / Coding", "Project Gemini / Documentation", "Internal Admin / Meetings", "Internal Admin / Email Response", "Client X / Proposal Draft", "Learning / Tutorial Videos"];
 
 		const populateSuggestions = (recentActivities = []) => {
 			suggestionsDatalist.innerHTML = '';
 			const combined = new Set([...HARDCODED_SUGGESTIONS, ...recentActivities]);
-
 			combined.forEach(activity => {
 				const option = document.createElement('option');
 				option.value = activity;
@@ -231,37 +258,7 @@
 			populateSuggestions(Array.from(activities));
 		};
 
-		// --- Core State and UI Management ---
-		const saveActiveTimers = () => {
-			const serializableTimers = {};
-			for (const id in activeTimers) {
-				const timer = activeTimers[id];
-				serializableTimers[id] = {
-					...timer,
-					startTime: timer.startTime ? timer.startTime.toISOString() : null
-				};
-			}
-			localStorage.setItem('activeTimers', JSON.stringify(serializableTimers));
-			activeCount.textContent = Object.keys(activeTimers).length;
-			noActiveMessage.classList.toggle('hidden', Object.keys(activeTimers).length > 0);
-		};
-
-		const loadActiveTimers = () => {
-			const savedTimers = localStorage.getItem('activeTimers');
-			if (savedTimers) {
-				const parsedTimers = JSON.parse(savedTimers);
-				for (const id in parsedTimers) {
-					const timer = parsedTimers[id];
-					timer.startTime = timer.startTime ? new Date(timer.startTime) : null;
-					activeTimers[id] = timer;
-				}
-			}
-			if (Object.keys(activeTimers).length > 0) {
-				startTimerDisplay();
-			}
-			renderActiveTimers();
-		};
-
+		// --- Core UI Management ---
 		const renderActiveTimers = () => {
 			activeTimersList.innerHTML = '';
 			const timersArray = Object.entries(activeTimers).map(([id, data]) => ({ id, ...data }));
@@ -291,11 +288,11 @@
 				projectHeader.className = 'flex justify-between items-center p-3 bg-gray-200 hover:bg-gray-300 cursor-pointer rounded-lg shadow-sm font-semibold text-gray-800';
 				projectHeader.setAttribute('data-target', projectId);
 				projectHeader.innerHTML = `
-                    <div class="flex items-center space-x-2">
-                        <svg id="icon-${projectId}" class="collapse-icon w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                        <span>${projectKey} (${tasks.length})</span>
-                    </div>
-                `;
+					<div class="flex items-center space-x-2">
+						<svg id="icon-${projectId}" class="collapse-icon w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+						<span>${projectKey} (${tasks.length})</span>
+					</div>
+				`;
 
 				const taskList = document.createElement('div');
 				taskList.id = projectId;
@@ -304,98 +301,61 @@
 				projectHeader.addEventListener('click', () => {
 					const isCollapsed = taskList.classList.contains('h-0');
 					const icon = document.getElementById(`icon-${projectId}`);
-
 					if (isCollapsed) {
 						taskList.classList.remove('h-0');
 						taskList.style.height = `${taskList.scrollHeight}px`;
 						icon.classList.add('rotate-90');
-						projectHeader.classList.add('bg-gray-300');
 					} else {
 						taskList.style.height = '0';
-						setTimeout(() => {
-							taskList.classList.add('h-0');
-							icon.classList.remove('rotate-90');
-							projectHeader.classList.remove('bg-gray-300');
-						}, 300);
+						icon.classList.remove('rotate-90');
+						taskList.addEventListener('transitionend', () => taskList.classList.add('h-0'), { once: true });
 					}
 				});
 
 				tasks.forEach(activity => {
 					const card = document.createElement('div');
 					card.id = `timer-card-${activity.id}`;
-
 					let cardClasses = 'flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-3 rounded-lg shadow-sm border border-gray-100 ml-4';
 					if (activity.isPaused) { cardClasses += ' paused-card'; }
 					card.className = cardClasses;
 
-					const infoDiv = document.createElement('div');
-					infoDiv.className = 'flex flex-col text-left mb-2 sm:mb-0';
-
 					const statusText = activity.isPaused ? '<span class="text-orange-500 font-bold mr-2">(Paused)</span>' : '';
+					card.innerHTML = `
+						<div class="flex flex-col text-left mb-2 sm:mb-0">
+							<span class="text-sm font-medium text-gray-700">${statusText} ${activity.task}</span>
+							<span class="text-xs text-gray-400">${activity.isPaused ? 'Accumulated' : 'Running Since'} ${activity.startTime ? activity.startTime.toLocaleTimeString() : 'N/A'}</span>
+						</div>
+						<div class="flex items-center space-x-2.5 mt-2 sm:mt-0">
+							<span id="duration-${activity.id}" class="text-lg font-mono text-gray-800 w-24 text-right flex-shrink-0">${formatDuration(Math.floor(calculateElapsedMs(activity) / 1000))}</span>
+							<button data-action="toggle" class="${activity.isPaused ? 'bg-green-500 hover:bg-green-600' : 'bg-yellow-500 hover:bg-yellow-600'} text-white text-xs px-3 py-1 rounded-lg transition duration-150 shadow-sm flex-shrink-0">${activity.isPaused ? 'Resume' : 'Pause'}</button>
+							<button data-action="stop" class="bg-red-500 text-white text-xs px-3 py-1 rounded-lg hover:bg-red-600 transition duration-150 shadow-sm flex-shrink-0">Stop</button>
+							<button data-action="delete" class="bg-gray-400 text-white text-xs px-3 py-1 rounded-lg hover:bg-gray-500 transition duration-150 shadow-sm flex-shrink-0">Delete</button>
+						</div>
+					`;
 
-					infoDiv.innerHTML = `
-                        <span class="text-sm font-medium text-gray-700">${statusText} ${activity.task}</span>
-                        <span class="text-xs text-gray-400">${activity.isPaused ? 'Accumulated' : 'Running Since'} ${activity.startTime ? activity.startTime.toLocaleTimeString() : 'N/A'}</span>
-                    `;
-
-					const controlsDiv = document.createElement('div');
-					controlsDiv.className = 'flex items-center space-x-2.5 mt-2 sm:mt-0';
-
-					const durationSpan = document.createElement('span');
-					durationSpan.id = `duration-${activity.id}`;
-					durationSpan.className = 'text-lg font-mono text-gray-800 w-24 text-right flex-shrink-0';
-					const initialDuration = Math.floor(calculateElapsedMs(activity) / 1000);
-					durationSpan.textContent = formatDuration(initialDuration);
-
-					const toggleBtn = document.createElement('button');
-					toggleBtn.textContent = activity.isPaused ? 'Resume' : 'Pause';
-					toggleBtn.className = activity.isPaused ?
-						'bg-green-500 text-white text-xs px-3 py-1 rounded-lg hover:bg-green-600 transition duration-150 shadow-sm flex-shrink-0' :
-						'bg-yellow-500 text-white text-xs px-3 py-1 rounded-lg hover:bg-yellow-600 transition duration-150 shadow-sm flex-shrink-0';
-					toggleBtn.addEventListener('click', () => toggleTimer(activity.id));
-
-					const stopBtn = document.createElement('button');
-					stopBtn.textContent = 'Stop';
-					stopBtn.className = 'bg-red-500 text-white text-xs px-3 py-1 rounded-lg hover:bg-red-600 transition duration-150 shadow-sm flex-shrink-0';
-					stopBtn.addEventListener('click', () => stopTimer(activity.id));
-
-					const deleteBtn = document.createElement('button');
-					deleteBtn.textContent = 'Delete';
-					deleteBtn.className = 'bg-gray-400 text-white text-xs px-3 py-1 rounded-lg hover:bg-gray-500 transition duration-150 shadow-sm flex-shrink-0';
-					deleteBtn.addEventListener('click', () => deleteTimer(activity.id));
-
-
-					controlsDiv.appendChild(durationSpan);
-					controlsDiv.appendChild(toggleBtn);
-					controlsDiv.appendChild(stopBtn);
-					controlsDiv.appendChild(deleteBtn);
-					card.appendChild(infoDiv);
-					card.appendChild(controlsDiv);
+					card.querySelector('[data-action="toggle"]').addEventListener('click', () => toggleTimer(activity.id));
+					card.querySelector('[data-action="stop"]').addEventListener('click', () => stopTimer(activity.id));
+					card.querySelector('[data-action="delete"]').addEventListener('click', () => deleteTimer(activity.id));
 
 					taskList.appendChild(card);
 				});
-
 				activeTimersList.appendChild(projectHeader);
 				activeTimersList.appendChild(taskList);
 			});
 		};
 
 		const updateTimerDisplay = () => {
-			let hasActiveTimers = false;
+			let hasRunningTimers = Object.values(activeTimers).some(t => !t.isPaused);
 			for (const id in activeTimers) {
-				hasActiveTimers = true;
 				const activity = activeTimers[id];
 				const durationSpan = document.getElementById(`duration-${id}`);
-
 				if (durationSpan) {
-					const elapsedMs = calculateElapsedMs(activity);
-					const elapsedSeconds = Math.floor(elapsedMs / 1000);
+					const elapsedSeconds = Math.floor(calculateElapsedMs(activity) / 1000);
 					durationSpan.textContent = formatDuration(elapsedSeconds);
 				}
 			}
-
-			if (!hasActiveTimers) {
-				if (timerInterval) clearInterval(timerInterval);
+			if (!hasRunningTimers && timerInterval) {
+				clearInterval(timerInterval);
 				timerInterval = null;
 			}
 		};
@@ -406,70 +366,56 @@
 			}
 		};
 
-		const startNewTimer = () => {
+		// --- Core State Management Functions ---
+		const startNewTimer = async () => {
 			errorMessage.textContent = '';
-
 			const fullTopic = topicInput.value.trim();
 			if (!fullTopic) {
 				errorMessage.textContent = "Please enter or select a Project / Task.";
-				topicInput.focus();
 				return;
 			}
 
 			const parts = fullTopic.split('/').map(p => p.trim());
-			const project = parts[0] || 'Uncategorized Project';
-			const task = parts[1] || 'Uncategorized Task';
-
+			const project = parts[0] || 'Uncategorized';
+			const task = parts[1] || 'Task';
 			const taskKey = getRunningTasksKey(project, task);
 
-			const duplicateFound = Object.values(activeTimers).some(timer =>
-				getRunningTasksKey(timer.project, timer.task) === taskKey
-			);
-
-			if (duplicateFound) {
+			if (Object.values(activeTimers).some(t => getRunningTasksKey(t.project, t.task) === taskKey)) {
 				errorMessage.textContent = `Error: The task "${project} / ${task}" is already running.`;
 				return;
 			}
 
 			const newId = generateUUID();
-			activeTimers[newId] = {
-				project: project,
-				task: task,
-				startTime: new Date(),
-				accumulatedMs: 0,
-				isPaused: false
-			};
+			activeTimers[newId] = { project, task, startTime: new Date(), accumulatedMs: 0, isPaused: false };
 
 			topicInput.value = '';
-			saveActiveTimers();
+			await saveActiveStateToServer();
 			renderActiveTimers();
 			startTimerDisplay();
 		};
 
-		const toggleTimer = (id) => {
+		const toggleTimer = async (id) => {
 			const timer = activeTimers[id];
 			if (!timer) return;
 
-			if (timer.isPaused) {
+			if (timer.isPaused) { // Resuming
 				timer.isPaused = false;
 				timer.startTime = new Date();
-			} else {
-				const elapsedMsSinceStart = Date.now() - timer.startTime.getTime();
-				timer.accumulatedMs += elapsedMsSinceStart;
+			} else { // Pausing
+				timer.accumulatedMs += (Date.now() - timer.startTime.getTime());
 				timer.startTime = null;
 				timer.isPaused = true;
 			}
 
-			saveActiveTimers();
+			await saveActiveStateToServer();
 			renderActiveTimers();
 			startTimerDisplay();
 		};
 
-		const deleteTimer = (id) => {
+		const deleteTimer = async (id) => {
 			if (!activeTimers[id]) return;
-
 			delete activeTimers[id];
-			saveActiveTimers();
+			await saveActiveStateToServer();
 			renderActiveTimers();
 		};
 
@@ -478,96 +424,68 @@
 			if (!activity) return;
 
 			const finalDurationMs = calculateElapsedMs(activity);
-			const durationSeconds = Math.round(finalDurationMs / 1000);
-
-			if (durationSeconds <= 0) {
-				delete activeTimers[id];
-				saveActiveTimers();
-				renderActiveTimers();
-				errorMessage.textContent = 'Task stopped instantly and deleted (zero duration).';
+			if (finalDurationMs <= 0) {
+				deleteTimer(id); // Just delete it, don't save a zero-duration entry
+				errorMessage.textContent = 'Task of zero duration was discarded.';
 				setTimeout(() => errorMessage.textContent = '', 3000);
 				return;
 			}
 
 			const endTime = new Date();
-
-			delete activeTimers[id];
-			saveActiveTimers();
-			renderActiveTimers();
+			delete activeTimers[id]; // Remove from active state first
 
 			const newEntry = {
 				project: activity.project,
 				task: activity.task,
 				totalDurationMs: finalDurationMs,
-				durationSeconds: durationSeconds,
-				endTime: endTime.toISOString(), // Save as ISO string for JSON compatibility
+				durationSeconds: Math.round(finalDurationMs / 1000),
+				endTime: endTime.toISOString(),
 				createdAt: new Date().toISOString()
 			};
 
-			// --- REPLACEMENT LOGIC START ---
 			historicalEntries.push(newEntry);
+
+			// Asynchronously save both states. Active state is more critical to save first.
+			await saveActiveStateToServer();
 			await saveDataToServer();
 
-			const tempStatus = document.createElement('p');
-			tempStatus.className = 'text-center text-sm text-blue-600 mt-2';
-			activeTimersList.insertAdjacentElement('afterend', tempStatus);
-			tempStatus.textContent = `Saving ${activity.project} / ${activity.task} ...`;
+			renderActiveTimers(); // Update UI immediately
 
-			tempStatus.textContent = `Saved ${activity.project} / ${activity.task} (${formatDuration(durationSeconds)})`;
+			const tempStatus = document.createElement('p');
 			tempStatus.className = 'text-center text-sm text-green-600 mt-2';
+			tempStatus.textContent = `Saved ${activity.project} / ${activity.task} (${formatDuration(newEntry.durationSeconds)})`;
+			activeTimersList.insertAdjacentElement('afterend', tempStatus);
 			setTimeout(() => tempStatus.remove(), 4000);
 
-			fetchRecentActivities(); // This will now read from the in-memory array
-			// --- REPLACEMENT LOGIC END ---
+			fetchRecentActivities(); // Refresh suggestions
 		};
 
 		const exportData = () => {
-			exportButton.textContent = 'Generating CSV...';
-			exportButton.disabled = true;
-
-			let data = historicalEntries.map(entry => {
-				const durationMinutes = (entry.durationSeconds / 60).toFixed(2);
-				return {
-					project: entry.project || 'N/A',
-					task: entry.task || 'N/A',
-					endTime: entry.endTime ? (new Date(entry.endTime)).toISOString() : 'N/A',
-					durationSeconds: entry.durationSeconds,
-					durationMinutes: durationMinutes,
-					totalDurationMs: entry.totalDurationMs
-				}
-			});
-
-
-			if (data.length === 0) {
-				console.log('No data entries found to export.');
-				exportButton.textContent = 'Export All Data (CSV)';
-				exportButton.disabled = false;
+			if (historicalEntries.length === 0) {
+				alert('No data to export.');
 				return;
 			}
+			exportButton.textContent = 'Generating...';
+			exportButton.disabled = true;
 
 			const headers = ["project", "task", "endTime", "durationSeconds", "durationMinutes", "totalDurationMs"];
-			const csvRows = [];
-			csvRows.push(headers.join(','));
-
-			for (const row of data) {
-				const values = headers.map(header => {
-					const value = row[header] ? ('' + row[header]) : '';
-					const escaped = value.replace(/"/g, '""');
-					return `"${escaped}"`;
-				});
+			const csvRows = [headers.join(',')];
+			historicalEntries.forEach(entry => {
+				const row = {
+					...entry,
+					endTime: (new Date(entry.endTime)).toISOString(),
+					durationMinutes: (entry.durationSeconds / 60).toFixed(2)
+				};
+				const values = headers.map(header => `"${(row[header] || '').toString().replace(/"/g, '""')}"`);
 				csvRows.push(values.join(','));
-			}
+			});
 
-			const csvString = csvRows.join('\n');
-			const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+			const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
 			const link = document.createElement('a');
 			link.href = URL.createObjectURL(blob);
 			link.download = `time_tracker_export_${new Date().toISOString().split('T')[0]}.csv`;
-			document.body.appendChild(link);
 			link.click();
-			document.body.removeChild(link);
 
-			console.log(`Exported ${data.length} entries.`);
 			exportButton.textContent = 'Export All Data (CSV)';
 			exportButton.disabled = false;
 		};
@@ -576,13 +494,9 @@
 		const switchTab = (targetTab) => {
 			document.querySelectorAll('.content-view').forEach(view => view.classList.add('hidden'));
 			document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-
 			document.getElementById(`view-${targetTab}`).classList.remove('hidden');
 			document.getElementById(`tab-${targetTab}`).classList.add('active');
-
-			if (targetTab === 'reports') {
-				renderReportsView();
-			}
+			if (targetTab === 'reports') renderReportsView();
 		};
 
 		document.getElementById('tab-tracker').addEventListener('click', () => switchTab('tracker'));
@@ -597,120 +511,45 @@
 			activeChartInstances.forEach(chart => chart.destroy());
 			activeChartInstances = [];
 
-			const allEntries = historicalEntries; // Use the global array directly
-
-			if (allEntries.length === 0) {
-				reportsLoading.textContent = "No data recorded yet. Start tracking to see reports!";
+			if (historicalEntries.length === 0) {
+				reportsLoading.textContent = "No data recorded yet. Track a task to see reports!";
 				return;
 			}
 
-			// 1. Prepare Data for Project Pie Chart
-			const projectDurations = allEntries.reduce((acc, entry) => {
-				const project = entry.project || 'Unknown';
-				acc[project] = (acc[project] || 0) + entry.totalDurationMs;
+			const projectDurations = historicalEntries.reduce((acc, entry) => {
+				acc[entry.project] = (acc[entry.project] || 0) + entry.totalDurationMs;
 				return acc;
 			}, {});
-
 			const projectLabels = Object.keys(projectDurations);
-			const projectData = projectLabels.map(label => projectDurations[label]);
+			const projectData = Object.values(projectDurations);
 			const projectColors = getDistinctColors(projectLabels.length);
 
-			// 2. Prepare Data for Daily Bar Chart
 			const dailyDurations = {};
-			const now = new Date();
-			now.setHours(0, 0, 0, 0);
-			const oneDayMs = 24 * 60 * 60 * 1000;
-
-			const lastSevenDaysLabels = [];
 			for (let i = 6; i >= 0; i--) {
-				const day = new Date(now.getTime() - i * oneDayMs);
-				const dateKey = day.toISOString().split('T')[0];
-				lastSevenDaysLabels.push(day.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' }));
-				dailyDurations[dateKey] = 0;
+				const day = new Date(Date.now() - i * 86400000);
+				dailyDurations[day.toISOString().split('T')[0]] = 0;
 			}
-
-			allEntries.forEach(entry => {
-				if (entry.endTime) {
-					const dateKey = (new Date(entry.endTime)).toISOString().split('T')[0];
-					if (dailyDurations.hasOwnProperty(dateKey)) {
-						dailyDurations[dateKey] += entry.totalDurationMs;
-					}
+			historicalEntries.forEach(entry => {
+				const dateKey = (new Date(entry.endTime)).toISOString().split('T')[0];
+				if (dailyDurations.hasOwnProperty(dateKey)) {
+					dailyDurations[dateKey] += entry.totalDurationMs;
 				}
 			});
-
-			const dailyDataMs = Object.values(dailyDurations).slice(-7);
-			const dailyDataHours = dailyDataMs.map(ms => ms / 3600000);
 
 			reportsLoading.classList.add('hidden');
 			reportsContent.classList.remove('hidden');
 
-			// --- Generate Project Pie Chart ---
 			const pieCtx = document.getElementById('project-pie-chart').getContext('2d');
-			const pieChart = new Chart(pieCtx, {
-				type: 'doughnut',
-				data: {
-					labels: projectLabels,
-					datasets: [{
-						data: projectData,
-						backgroundColor: projectColors,
-						hoverOffset: 4
-					}]
-				},
-				options: {
-					responsive: true,
-					maintainAspectRatio: false,
-					plugins: {
-						legend: { position: 'right' },
-						tooltip: {
-							callbacks: {
-								label: (context) => {
-									const totalSeconds = Math.round(context.parsed / 1000);
-									return `${context.label}: ${formatDuration(totalSeconds)}`;
-								}
-							}
-						}
-					}
-				}
-			});
-			activeChartInstances.push(pieChart);
+			activeChartInstances.push(new Chart(pieCtx, {
+				type: 'doughnut', data: { labels: projectLabels, datasets: [{ data: projectData, backgroundColor: projectColors }] },
+				options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' }, tooltip: { callbacks: { label: c => `${c.label}: ${formatDuration(Math.round(c.parsed / 1000))}` } } } }
+			}));
 
-
-			// --- Generate Daily Bar Chart ---
 			const barCtx = document.getElementById('daily-bar-chart').getContext('2d');
-			const barChart = new Chart(barCtx, {
-				type: 'bar',
-				data: {
-					labels: lastSevenDaysLabels,
-					datasets: [{
-						label: 'Hours Logged',
-						data: dailyDataHours,
-						backgroundColor: '#4f46e5',
-						borderRadius: 4
-					}]
-				},
-				options: {
-					responsive: true,
-					maintainAspectRatio: false,
-					scales: {
-						y: {
-							beginAtZero: true,
-							title: { display: true, text: 'Hours' }
-						}
-					},
-					plugins: {
-						legend: { display: false },
-						tooltip: {
-							callbacks: {
-								label: (context) => {
-									const hours = context.parsed.y.toFixed(2);
-									return `Total: ${hours} hours`;
-								}
-							}
-						}
-					}
-				}
-			});
-			activeChartInstances.push(barChart);
+			activeChartInstances.push(new Chart(barCtx, {
+				type: 'bar', data: { labels: Object.keys(dailyDurations).map(d => new Date(d).toLocaleDateString('en-US', { weekday: 'short' })), datasets: [{ label: 'Hours Logged', data: Object.values(dailyDurations).map(ms => ms / 3600000), backgroundColor: '#4f46e5' }] },
+				options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, title: { display: true, text: 'Hours' } } }, plugins: { legend: { display: false } } }
+			}));
 		};
 
 		// --- Initialization ---
@@ -719,10 +558,15 @@
 			startButton.addEventListener('click', startNewTimer);
 			exportButton.addEventListener('click', exportData);
 
-			await loadDataFromServer(); // Load initial data
+			await loadDataFromServer();       // 1. Load historical data
+			await loadActiveStateFromServer();  // 2. Load active timers from server
 
-			loadActiveTimers(); // Load running timers from localStorage
-			fetchRecentActivities(); // Populate suggestions
+			renderActiveTimers();               // 3. Render the UI with loaded state
+			fetchRecentActivities();            // 4. Populate suggestions
+
+			if (Object.values(activeTimers).some(t => !t.isPaused)) {
+				startTimerDisplay();            // 5. Start the timer display loop if needed
+			}
 		};
 
 		initializeApp();
