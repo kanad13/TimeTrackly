@@ -33,7 +33,7 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const CONFIG = {
 	baseUrl: "http://localhost:13331",
 	viewport: { width: 1280, height: 800 },
-	screenshotDir: "screenshots",
+	screenshotDir: "tests/screenshots/e2e",
 	headless: process.env.HEADLESS === "true",
 };
 

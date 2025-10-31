@@ -1,0 +1,29 @@
+[
+	{
+		"project": "Test Project",
+		"task": "Test Task 1",
+		"totalDurationMs": 3600000,
+		"durationSeconds": 3600,
+		"endTime": "2025-10-31T12:00:00.000Z",
+		"createdAt": "2025-10-31T11:00:00.000Z",
+		"notes": "Test notes for sample data"
+	},
+	{
+		"project": "Test Project",
+		"task": "Test Task 2",
+		"totalDurationMs": 7200000,
+		"durationSeconds": 7200,
+		"endTime": "2025-10-31T14:00:00.000Z",
+		"createdAt": "2025-10-31T12:00:00.000Z",
+		"notes": "Another test entry"
+	},
+	{
+		"project": "Another Project",
+		"task": "Different Task",
+		"totalDurationMs": 1800000,
+		"durationSeconds": 1800,
+		"endTime": "2025-10-31T15:00:00.000Z",
+		"createdAt": "2025-10-31T14:30:00.000Z",
+		"notes": ""
+	}
+]

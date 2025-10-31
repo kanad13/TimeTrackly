@@ -124,10 +124,16 @@
 
 - The system provides robust controls to handle `real-world workflow` interruptions
 - **Pause/Resume:**
+
   - **Mechanism:** When paused, the `startTime` is nullified, and the elapsed time is stored in `accumulatedMs`
     - When resumed, `startTime` is set back to `Date.now()`
     - The state is saved to the server on each toggle
   - **UX:** Paused timers receive a visual indicator (`orange border`) and their buttons switch to `Resume`
+
+- ![](/assets/020-ui_timer_with_notes.png)
+  _Active timers display real-time duration and control buttons_
+  _Paused timers show orange border and resume option_
+
 - **Delete (Discard):** Allows users to remove accidental or incomplete timers from the active list without generating a permanent record
   - This action also syncs with the server
 - **Notes/Comments:** Each timer includes a textarea for adding detailed notes or comments
@@ -161,6 +167,15 @@
   - **Project Time Distribution (Doughnut Chart):** Shows percentage of time spent per project
   - **Daily Time Logged (Bar Chart):** Shows total time logged for the last 7 days
 - **Color Consistency:** The `utils.js` module provides deterministic color generation ensuring the same project always gets the same color across charts
+
+### 3.6. Input Validation & Error Handling
+
+- The application provides clear, actionable error messages for invalid input
+- Empty or whitespace-only task names are rejected with helpful guidance
+- Error messages use color-coded styling (red for errors) for immediate recognition
+
+![Error Validation](/assets/030-ui_error_validation.png)
+_Clear error messages guide users to correct input issues_
 
 ## 4. Implementation Details
 

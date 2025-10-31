@@ -4,6 +4,9 @@
 
 MTTT is a modern time tracker built on a single principle: **your data belongs to you.** It runs entirely on your local machine, has zero external dependencies, and never sends your information anywhere. It's designed for developers, freelancers, and anyone who wants a reliable, private tool to track their work without compromise.
 
+![](/assets/010-ui_initial_load.png)
+_Clean, Material Design-inspired interface with collapsible sections_
+
 ## 1. Features at a Glance
 
 - **Hierarchical Tracking:** Organize your work effortlessly by grouping tasks under collapsible project headers.
@@ -16,6 +19,18 @@ MTTT is a modern time tracker built on a single principle: **your data belongs t
 - **Smart Input:** Autocomplete suggestions are populated from your recent entries and a simple, user-editable `mtt-suggestions.json` file.
 - **Rock-Solid Data Integrity:** Prevents concurrent tracking of the same task and uses atomic file writes to protect your data.
 - **Built-in Health Check:** A simple endpoint to verify that the server is running and your data files are healthy.
+
+### Active Timer Management
+
+- Track multiple tasks simultaneously with real-time duration display
+- Start, Pause, Resume, Stop (Save), and Delete (Discard) controls for each timer
+- Add notes to tasks that auto-save and export with your data
+- ![](/assets/020-ui_timer_with_notes.png)
+
+### Reports & Analytics
+
+![Reports View](assets/040-ui_reports_view.png)
+_Visualize your time distribution across projects and daily activity_
 
 ## 2. How to Use the Application
 
@@ -39,6 +54,11 @@ Once the server is running, the workflow is simple and intuitive.
 - **View Reports:** Click the **Reports & Analytics** tab to see charts of your historical data.
 - **Export Data:** On the "Time Tracker" tab, click the **Export All Data (CSV)** button to download a complete record of all completed tasks.
 
+### 2.4. Error Handling & Validation
+
+![Error Validation](/assets/030-ui_error_validation.png)
+_Clear error messages guide you when input is invalid_
+
 ## 3. Stack & Deployment
 
 The application runs locally using a simple Node.js server with zero external dependencies.
@@ -54,7 +74,7 @@ The application runs locally using a simple Node.js server with zero external de
 ## 4. Getting Started
 
 - **Clone the Repository:**
-  - `git clone [your-repo-url]`
+  - `git clone https://github.com/kanad13/time-tracker.git`
   - `cd time-tracker`
 - **Setup & Run:** Follow the simple instructions in the `setup.md` file to get the application running on your machine in under a minute.
 

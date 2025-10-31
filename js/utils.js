@@ -47,7 +47,7 @@ export const generateUUID = () => crypto.randomUUID();
  */
 export const formatDuration = (seconds) => {
 	const h = Math.floor(
-		seconds / CONSTANTS.MS_PER_HOUR / CONSTANTS.MS_PER_SECOND
+		seconds / (CONSTANTS.MS_PER_HOUR / CONSTANTS.MS_PER_SECOND)
 	);
 	const m = Math.floor(
 		(seconds % (CONSTANTS.MS_PER_HOUR / CONSTANTS.MS_PER_SECOND)) /
