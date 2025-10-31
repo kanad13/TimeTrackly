@@ -28,7 +28,7 @@
 - **Clone the Repository:**
   - `git clone [your-repo-url]`
   - `cd mttt-tracker`
-- **Setup & Run:** Follow the simple instructions in the `local_setup.md` file to get the application running on your machine in under a minute.
+- **Setup & Run:** Follow the simple instructions in the `setup.md` file to get the application running on your machine in under a minute.
 
 ## 4. Detailed Guidance
 
