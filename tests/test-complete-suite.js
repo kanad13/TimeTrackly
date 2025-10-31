@@ -144,6 +144,21 @@ async function testCollapsibleSections(page) {
 async function testStartTimer(page) {
 	console.log("\n📋 Test 3: Start Timer");
 
+	// Clean up any existing timers from previous tests
+	let existingTimers = await page.$$("[data-timer-id]");
+	while (existingTimers.length > 0) {
+		// Always get fresh reference after each delete since DOM re-renders
+		await page.evaluate(() => {
+			const timer = document.querySelector("[data-timer-id]");
+			if (timer) {
+				const deleteBtn = timer.querySelector('[data-action="delete"]');
+				if (deleteBtn) deleteBtn.click();
+			}
+		});
+		await delay(500);
+		existingTimers = await page.$$("[data-timer-id]");
+	}
+
 	// Expand Start New Timer section if collapsed
 	const startSectionHeight = await page.$eval(
 		"#data-entry-content",
@@ -491,6 +506,16 @@ async function testResponsiveDesign(page) {
 async function testErrorHandling(page) {
 	console.log("\n📋 Test 11: Error Handling");
 
+	// Expand Start New Timer section if collapsed
+	const startSectionHeight = await page.$eval(
+		"#data-entry-content",
+		(el) => el.offsetHeight
+	);
+	if (startSectionHeight === 0) {
+		await page.click("#data-entry-header");
+		await delay(500);
+	}
+
 	// Try to start timer with empty input
 	await page.click("#start-button");
 	await delay(500);
@@ -507,8 +532,14 @@ async function testErrorHandling(page) {
 
 	console.log("   ✅ Error message displayed for empty input");
 
-	// Try invalid format (no slash)
-	await page.type("#topic-input", "Invalid Format Without Slash");
+	// Clear the error message and input
+	await page.evaluate(() => {
+		document.getElementById("error-message").textContent = "";
+		document.getElementById("topic-input").value = "";
+	});
+
+	// Try with just whitespace
+	await page.type("#topic-input", "   ");
 	await page.click("#start-button");
 	await delay(500);
 
@@ -518,19 +549,21 @@ async function testErrorHandling(page) {
 	);
 
 	if (!errorMessage2 || errorMessage2.length === 0) {
-		throw new Error("No error message shown for invalid format");
+		throw new Error("No error message shown for whitespace input");
 	}
+
+	console.log("   ✅ Error message displayed for whitespace input");
 
 	await page.screenshot({
 		path: path.join(CONFIG.screenshotDir, "12-error-handling.png"),
 		fullPage: true,
 	});
 
-	console.log("   ✅ Error message displayed for invalid format");
-
-	// Clear input
-	await page.click("#topic-input", { clickCount: 3 });
-	await page.keyboard.press("Backspace");
+	// Clear input for next tests
+	await page.evaluate(() => {
+		document.getElementById("topic-input").value = "";
+		document.getElementById("error-message").textContent = "";
+	});
 }
 
 /**

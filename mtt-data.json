@@ -79,5 +79,41 @@
     "endTime": "2025-10-31T08:54:01.555Z",
     "createdAt": "2025-10-31T08:54:01.555Z",
     "notes": "<dasdasasdasdasd"
+  },
+  {
+    "project": "Test Project",
+    "task": "Test Task",
+    "totalDurationMs": 689016,
+    "durationSeconds": 689,
+    "endTime": "2025-10-31T09:42:30.445Z",
+    "createdAt": "2025-10-31T09:42:30.445Z",
+    "notes": "This is a test note with multiple lines.\nLine 2\nLine 3 with special chars: @#$%This is a test note with multiple lines.\nLine 2\nLine 3 with special chars: @#$%"
+  },
+  {
+    "project": "Test Project",
+    "task": "Test Task",
+    "totalDurationMs": 3300,
+    "durationSeconds": 3,
+    "endTime": "2025-10-31T09:48:44.547Z",
+    "createdAt": "2025-10-31T09:48:44.547Z",
+    "notes": "This is a test note with multiple lines.\nLine 2\nLine 3 with special chars: @#$%"
+  },
+  {
+    "project": "Test Project",
+    "task": "Test Task",
+    "totalDurationMs": 3249,
+    "durationSeconds": 3,
+    "endTime": "2025-10-31T09:50:39.397Z",
+    "createdAt": "2025-10-31T09:50:39.397Z",
+    "notes": "This is a test note with multiple lines.\nLine 2\nLine 3 with special chars: @#$%"
+  },
+  {
+    "project": "Test Project",
+    "task": "Test Task",
+    "totalDurationMs": 3281,
+    "durationSeconds": 3,
+    "endTime": "2025-10-31T09:53:15.665Z",
+    "createdAt": "2025-10-31T09:53:15.665Z",
+    "notes": "This is a test note with multiple lines.\nLine 2\nLine 3 with special chars: @#$%"
   }
 ]

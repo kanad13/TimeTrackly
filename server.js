@@ -418,6 +418,15 @@ const requestHandler = async (req, res) => {
 			return;
 		}
 
+		// --- Serve favicon ---
+		if (req.url === "/favicon.ico") {
+			// Simple SVG favicon (timer icon)
+			const faviconSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#4285f4"/><path d="M50 25 L50 50 L70 60" stroke="white" stroke-width="6" fill="none" stroke-linecap="round"/></svg>`;
+			res.writeHead(200, { "Content-Type": "image/svg+xml" });
+			res.end(faviconSVG);
+			return;
+		}
+
 		// --- Static File Server: Serve JS modules ---
 		if (req.url.startsWith("/js/") && req.url.endsWith(".js")) {
 			try {

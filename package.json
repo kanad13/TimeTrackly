@@ -9,8 +9,8 @@
 		"dev": "NODE_ENV=development node server.js",
 		"health": "curl -s http://localhost:13331/api/health | json_pp || curl -s http://localhost:13331/api/health",
 		"backup": "mkdir -p backups && cp mtt-*.json backups/backup-$(date +%Y%m%d-%H%M%S)/ 2>/dev/null || true",
-		"test": "echo \"Error: Tests not yet implemented. Run 'npm run test:setup' to set up testing.\" && exit 1",
-		"test:setup": "echo \"To add tests, install: npm install --save-dev jest\" && echo \"Then create tests in test/ directory\""
+		"test": "node tests/test-complete-suite.js",
+		"test:headless": "HEADLESS=true node tests/test-complete-suite.js"
 	},
 	"keywords": [
 		"time-tracker",

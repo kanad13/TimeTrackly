@@ -196,6 +196,7 @@ export const renderActiveTimers = () => {
 		tasks.forEach((activity) => {
 			const card = document.createElement("div");
 			card.id = `timer-card-${activity.id}`;
+			card.setAttribute("data-timer-id", activity.id);
 			let cardClasses =
 				"flex flex-col bg-white p-3 rounded-lg shadow-sm border border-gray-100 ml-4";
 			if (activity.isPaused) {
@@ -206,6 +207,12 @@ export const renderActiveTimers = () => {
 			const statusText = activity.isPaused
 				? '<span class="text-orange-500 font-bold mr-2">(Paused)</span>'
 				: "";
+			const toggleAction = activity.isPaused ? "resume" : "pause";
+			const toggleClass = activity.isPaused
+				? "bg-green-500 hover:bg-green-600"
+				: "bg-yellow-500 hover:bg-yellow-600";
+			const toggleLabel = activity.isPaused ? "Resume" : "Pause";
+
 			card.innerHTML = `
 				<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2">
 					<div class="flex flex-col text-left mb-2 sm:mb-0">
@@ -224,13 +231,7 @@ export const renderActiveTimers = () => {
 						}" class="text-lg font-mono text-gray-800 w-24 text-right flex-shrink-0">${formatDuration(
 				Math.floor(calculateElapsedMs(activity) / CONSTANTS.MS_PER_SECOND)
 			)}</span>
-						<button data-action="toggle" class="${
-							activity.isPaused
-								? "bg-green-500 hover:bg-green-600"
-								: "bg-yellow-500 hover:bg-yellow-600"
-						} text-white text-xs px-3 py-1 rounded-lg transition duration-150 shadow-sm flex-shrink-0">${
-				activity.isPaused ? "Resume" : "Pause"
-			}</button>
+						<button data-action="${toggleAction}" class="${toggleClass} text-white text-xs px-3 py-1 rounded-lg transition duration-150 shadow-sm flex-shrink-0">${toggleLabel}</button>
 						<button data-action="stop" class="bg-red-500 text-white text-xs px-3 py-1 rounded-lg hover:bg-red-600 transition duration-150 shadow-sm flex-shrink-0">Stop</button>
 						<button data-action="delete" class="bg-gray-400 text-white text-xs px-3 py-1 rounded-lg hover:bg-gray-500 transition duration-150 shadow-sm flex-shrink-0">Delete</button>
 					</div>
@@ -245,15 +246,22 @@ export const renderActiveTimers = () => {
 				</div>
 			`;
 
-			card
-				.querySelector('[data-action="toggle"]')
-				.addEventListener("click", () => toggleTimer(activity.id));
-			card
-				.querySelector('[data-action="stop"]')
-				.addEventListener("click", () => stopTimer(activity.id));
-			card
-				.querySelector('[data-action="delete"]')
-				.addEventListener("click", () => deleteTimer(activity.id));
+			const toggleButton = card.querySelector(
+				`[data-action="${toggleAction}"]`
+			);
+			if (toggleButton) {
+				toggleButton.addEventListener("click", () => toggleTimer(activity.id));
+			}
+
+			const stopButton = card.querySelector('[data-action="stop"]');
+			if (stopButton) {
+				stopButton.addEventListener("click", () => stopTimer(activity.id));
+			}
+
+			const deleteButton = card.querySelector('[data-action="delete"]');
+			if (deleteButton) {
+				deleteButton.addEventListener("click", () => deleteTimer(activity.id));
+			}
 
 			// Add notes change handler
 			const notesTextarea = card.querySelector(`#notes-${activity.id}`);

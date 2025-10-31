@@ -1,8 +1,8 @@
-# TimeTrackly
+# Multi-Task Time Tracker (MTTT)
 
 > **Your Time, Your Data.** A simple, private, and offline-first time tracker.
 
-TimeTrackly is a modern time tracker built on a single principle: **your data belongs to you.** It runs entirely on your local machine, has zero external dependencies, and never sends your information anywhere. It's designed for developers, freelancers, and anyone who wants a reliable, private tool to track their work without compromise.
+MTTT is a modern time tracker built on a single principle: **your data belongs to you.** It runs entirely on your local machine, has zero external dependencies, and never sends your information anywhere. It's designed for developers, freelancers, and anyone who wants a reliable, private tool to track their work without compromise.
 
 ## 1. Features at a Glance
 
@@ -13,7 +13,7 @@ TimeTrackly is a modern time tracker built on a single principle: **your data be
 - **Notes & Comments:** Add context to your work. Notes are auto-saved and included in your data exports.
 - **Clean, Focused UI:** Collapsible sections for starting timers, viewing active work, and exporting data keep your workspace tidy.
 - **Instant Insights:** A dedicated Reports tab provides real-time visualizations, including Project Time Distribution and Daily Time Logged charts.
-- **Smart Input:** Autocomplete suggestions are populated from your recent entries and a simple, user-editable `timetrackly-suggestions.json` file.
+- **Smart Input:** Autocomplete suggestions are populated from your recent entries and a simple, user-editable `mtt-suggestions.json` file.
 - **Rock-Solid Data Integrity:** Prevents concurrent tracking of the same task and uses atomic file writes to protect your data.
 - **Built-in Health Check:** A simple endpoint to verify that the server is running and your data files are healthy.
 
@@ -25,8 +25,8 @@ Once the server is running, the workflow is simple and intuitive.
 
 - **Enter a Task:** In the input field, type the task you want to track using the `Project / Task` format.
 - **Start the Timer:** Click the **Start** button to see a new timer appear under the appropriate project.
-- **Track Multiple Tasks:** Run as many timers as you need concurrently. TimeTrackly will group them by project.
-- **Stop and Save:** When a task is complete, click **Stop**. The timer is removed from the active list and its data is permanently saved to `timetrackly-data.json`.
+- **Track Multiple Tasks:** Run as many timers as you need concurrently. MTTT will group them by project.
+- **Stop and Save:** When a task is complete, click **Stop**. The timer is removed from the active list and its data is permanently saved to `mtt-data.json`.
 
 ### 2.2. Managing Active Timers
 
@@ -47,15 +47,15 @@ The application runs locally using a simple Node.js server with zero external de
 | :---------------- | :------------------------------------------------------------------------- | :------------------------------------------------------------------------------- |
 | **Client**        | HTML5, ES6 Modules, Vanilla JavaScript, Tailwind CSS (CDN), Chart.js (CDN) | Modular UI with 7 ES6 modules for separation of concerns                         |
 | **Backend**       | Node.js (with built-in `http`, `fs.promises`, and `path` modules)          | Local web server with atomic file I/O and health monitoring                      |
-| **Data Storage**  | `timetrackly-data.json` & `timetrackly-active-state.json`                  | JSON-based persistence for **historical** and **in-progress** data, respectively |
-| **Configuration** | `timetrackly-suggestions.json`                                             | A user-editable JSON file for populating input suggestions                       |
+| **Data Storage**  | `mtt-data.json` & `mtt-active-state.json`                                  | JSON-based persistence for **historical** and **in-progress** data, respectively |
+| **Configuration** | `mtt-suggestions.json`                                                     | A user-editable JSON file for populating input suggestions                       |
 | **Deployment**    | Local Machine Execution                                                    | Run via `npm start` or `npm run dev`                                             |
 
 ## 4. Getting Started
 
 - **Clone the Repository:**
   - `git clone [your-repo-url]`
-  - `cd timetrackly`
+  - `cd time-tracker`
 - **Setup & Run:** Follow the simple instructions in the `setup.md` file to get the application running on your machine in under a minute.
 
 ## 5. Detailed Guidance
