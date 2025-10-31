@@ -57,10 +57,20 @@ export const loadDataFromServer = async () => {
 		if (!response.ok)
 			throw new Error(`Server responded with ${response.status}`);
 		const data = await response.json();
-		state.historicalEntries = data.map((entry) => ({
-			...entry,
-			endTime: new Date(entry.endTime),
-		}));
+		state.historicalEntries = data.map((entry) => {
+			const endTime = new Date(entry.endTime);
+			if (isNaN(endTime.getTime())) {
+				console.warn("Invalid date in entry:", entry.endTime);
+				return {
+					...entry,
+					endTime: new Date(),
+				};
+			}
+			return {
+				...entry,
+				endTime: endTime,
+			};
+		});
 	} catch (error) {
 		console.error("FATAL: Could not load data from server.", error);
 		showNotification(

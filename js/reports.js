@@ -91,95 +91,112 @@ export const renderReportsView = () => {
 		return;
 	}
 
-	// Calculate project durations
-	const projectDurations = state.historicalEntries.reduce((acc, entry) => {
-		acc[entry.project] = (acc[entry.project] || 0) + entry.totalDurationMs;
-		return acc;
-	}, {});
-	const projectLabels = Object.keys(projectDurations);
-	const projectData = Object.values(projectDurations);
-	const projectColors = getDistinctColors(projectLabels.length);
-
-	// Calculate daily durations for last 7 days
-	const dailyDurations = {};
-	for (let i = CONSTANTS.REPORT_DAYS_DEFAULT - 1; i >= 0; i--) {
-		const day = new Date(Date.now() - i * CONSTANTS.MS_PER_DAY);
-		dailyDurations[day.toISOString().split("T")[0]] = 0;
-	}
-	state.historicalEntries.forEach((entry) => {
-		const dateKey = new Date(entry.endTime).toISOString().split("T")[0];
-		if (dailyDurations.hasOwnProperty(dateKey)) {
-			dailyDurations[dateKey] += entry.totalDurationMs;
+	try {
+		// Check if Chart.js is available
+		if (typeof Chart === "undefined") {
+			reportsLoading.classList.add("hidden");
+			reportsError.classList.remove("hidden");
+			reportsError.textContent =
+				"Chart library failed to load. Please refresh the page or check your internet connection.";
+			return;
 		}
-	});
 
-	reportsLoading.classList.add("hidden");
-	reportsContent.classList.remove("hidden");
+		// Calculate project durations
+		const projectDurations = state.historicalEntries.reduce((acc, entry) => {
+			acc[entry.project] = (acc[entry.project] || 0) + entry.totalDurationMs;
+			return acc;
+		}, {});
+		const projectLabels = Object.keys(projectDurations);
+		const projectData = Object.values(projectDurations);
+		const projectColors = getDistinctColors(projectLabels.length);
 
-	// Create project pie chart
-	const pieCtx = document.getElementById("project-pie-chart").getContext("2d");
-	state.activeChartInstances.push(
-		new Chart(pieCtx, {
-			type: "doughnut",
-			data: {
-				labels: projectLabels,
-				datasets: [
-					{
-						data: projectData,
-						backgroundColor: projectColors,
-					},
-				],
-			},
-			options: {
-				responsive: true,
-				maintainAspectRatio: false,
-				plugins: {
-					legend: { position: "right" },
-					tooltip: {
-						callbacks: {
-							label: (c) =>
-								`${c.label}: ${formatDuration(
-									Math.round(c.parsed / CONSTANTS.MS_PER_SECOND)
-								)}`,
+		// Calculate daily durations for last 7 days
+		const dailyDurations = {};
+		for (let i = CONSTANTS.REPORT_DAYS_DEFAULT - 1; i >= 0; i--) {
+			const day = new Date(Date.now() - i * CONSTANTS.MS_PER_DAY);
+			dailyDurations[day.toISOString().split("T")[0]] = 0;
+		}
+		state.historicalEntries.forEach((entry) => {
+			const dateKey = new Date(entry.endTime).toISOString().split("T")[0];
+			if (dailyDurations.hasOwnProperty(dateKey)) {
+				dailyDurations[dateKey] += entry.totalDurationMs;
+			}
+		});
+
+		reportsLoading.classList.add("hidden");
+		reportsContent.classList.remove("hidden");
+
+		// Create project pie chart
+		const pieCtx = document.getElementById("project-pie-chart").getContext("2d");
+		state.activeChartInstances.push(
+			new Chart(pieCtx, {
+				type: "doughnut",
+				data: {
+					labels: projectLabels,
+					datasets: [
+						{
+							data: projectData,
+							backgroundColor: projectColors,
+						},
+					],
+				},
+				options: {
+					responsive: true,
+					maintainAspectRatio: false,
+					plugins: {
+						legend: { position: "right" },
+						tooltip: {
+							callbacks: {
+								label: (c) =>
+									`${c.label}: ${formatDuration(
+										Math.round(c.parsed / CONSTANTS.MS_PER_SECOND)
+									)}`,
+							},
 						},
 					},
 				},
-			},
-		})
-	);
+			})
+		);
 
-	// Create daily bar chart
-	const barCtx = document.getElementById("daily-bar-chart").getContext("2d");
-	state.activeChartInstances.push(
-		new Chart(barCtx, {
-			type: "bar",
-			data: {
-				labels: Object.keys(dailyDurations).map((d) =>
-					new Date(d).toLocaleDateString("en-US", { weekday: "short" })
-				),
-				datasets: [
-					{
-						label: "Hours Logged",
-						data: Object.values(dailyDurations).map(
-							(ms) => ms / CONSTANTS.MS_PER_HOUR
-						),
-						backgroundColor: "#4f46e5",
+		// Create daily bar chart
+		const barCtx = document.getElementById("daily-bar-chart").getContext("2d");
+		state.activeChartInstances.push(
+			new Chart(barCtx, {
+				type: "bar",
+				data: {
+					labels: Object.keys(dailyDurations).map((d) =>
+						new Date(d).toLocaleDateString("en-US", { weekday: "short" })
+					),
+					datasets: [
+						{
+							label: "Hours Logged",
+							data: Object.values(dailyDurations).map(
+								(ms) => ms / CONSTANTS.MS_PER_HOUR
+							),
+							backgroundColor: "#4f46e5",
+						},
+					],
+				},
+				options: {
+					responsive: true,
+					maintainAspectRatio: false,
+					scales: {
+						y: {
+							beginAtZero: true,
+							title: { display: true, text: "Hours" },
+						},
 					},
-				],
-			},
-			options: {
-				responsive: true,
-				maintainAspectRatio: false,
-				scales: {
-					y: {
-						beginAtZero: true,
-						title: { display: true, text: "Hours" },
+					plugins: {
+						legend: { display: false },
 					},
 				},
-				plugins: {
-					legend: { display: false },
-				},
-			},
-		})
-	);
+			})
+		);
+	} catch (error) {
+		console.error("Error rendering reports:", error);
+		reportsLoading.classList.add("hidden");
+		reportsError.classList.remove("hidden");
+		reportsError.textContent =
+			"Failed to render reports. Please try again or refresh the page.";
+	}
 };
