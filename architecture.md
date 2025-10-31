@@ -11,9 +11,10 @@
 
 - **Frontend:** A single `index.html` file containing all UI, application logic, and event handling. It is served statically by the backend.
 - **Backend:** A lightweight, local Node.js micro-server (`server.js`) responsible for serving the frontend and handling all data persistence operations.
-- **Data Persistence:** Two distinct, human-readable JSON files in the project's root directory function as the local database, separating active and historical data.
+- **Data Persistence:** Three distinct, human-readable JSON files in the project's root directory function as the local database and configuration.
   - `mtt-data.json`: Stores the permanent record of all **completed** time entries.
   - `mtt-active-state.json`: Stores a real-time snapshot of all **currently running or paused** timers, enabling session persistence.
+  - `mtt-suggestions.json`: Stores a user-editable list of predefined "Project / Task" combinations for the smart input field.
 
 ### 1.2. Data Persistence and Model
 
@@ -22,6 +23,7 @@
 
   - `mtt-data.json`: An array of historical time entry records.
   - `mtt-active-state.json`: A JSON object representing the `activeTimers` state.
+  - `mtt-suggestions.json`: An array of strings (e.g., `"My Project / My Task"`) used to populate the input suggestions.
 
 - **Data Model (Historical Entry in `mtt-data.json`):**
 
@@ -48,8 +50,9 @@
 - **Data Flow (Event-Driven Synchronization):**
   - The application uses an event-driven model to ensure the server's state is always synchronized with the client's actions, providing high data durability.
   - **On Startup:**
-    1. The frontend (`index.html`) makes a `GET` request to `/api/data` to fetch all historical entries.
-    2. It then makes a `GET` request to `/api/active-state` to fetch the last known running timers, restoring the previous session perfectly.
+    1. The frontend (`index.html`) makes a `GET` request to `/api/suggestions` to fetch the user-defined suggestions.
+    2. It then makes a `GET` request to `/api/data` to fetch all historical entries.
+    3. Finally, it makes a `GET` request to `/api/active-state` to fetch the last known running timers, restoring the previous session perfectly.
   - **On State Change (Start, Pause, Resume, Delete):**
     1. The user action modifies the `activeTimers` object in the browser's memory.
     2. Immediately following the in-memory change, the entire `activeTimers` object is sent via a `POST` request to `/api/active-state`, overwriting the file on the server. This ensures the running state is always backed up.
@@ -77,8 +80,8 @@
 
 ### 2.3. Smart Input
 
-- **Mechanism:** The `<datalist>` dynamically provides suggestions by combining hardcoded templates and the most recent unique Project / Task strings from the `historicalEntries` data.
-- **UX Goal:** Reduce typing and ensure consistency in data entry, vital for accurate reporting.
+- **Mechanism:** The `<datalist>` dynamically provides suggestions by combining a user-editable `mtt-suggestions.json` file and the most recent unique Project / Task strings from the `historicalEntries` data.
+- **UX Goal:** Reduce typing and ensure consistency in data entry, vital for accurate reporting. Users can customize their primary suggestions by editing the JSON file and refreshing the browser.
 
 ### 2.4. Reports View
 

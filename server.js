@@ -5,8 +5,8 @@ const path = require("path");
 
 const PORT = 13331; // Using a 5-digit port to avoid common conflicts
 const DATA_FILE_PATH = path.join(__dirname, "mtt-data.json");
-const TEMPLATE_DATA_PATH = path.join(__dirname, "template-mtt-data.json");
 const ACTIVE_STATE_PATH = path.join(__dirname, "mtt-active-state.json");
+const SUGGESTIONS_PATH = path.join(__dirname, "mtt-suggestions.json");
 
 // --- Pre-flight Check: Ensure data file exists on startup ---
 const initializeDataFile = () => {
@@ -14,16 +14,10 @@ const initializeDataFile = () => {
 		console.log("✅ Data file 'mtt-data.json' already exists.");
 		return;
 	}
-	console.log("Data file not found. Attempting to create from template...");
-	if (!fs.existsSync(TEMPLATE_DATA_PATH)) {
-		console.log("⚠️ Template file not found. Creating a new empty data file.");
-		fs.writeFileSync(DATA_FILE_PATH, "[]", "utf8");
-		return;
-	}
 	try {
-		const templateData = fs.readFileSync(TEMPLATE_DATA_PATH, "utf8");
-		fs.writeFileSync(DATA_FILE_PATH, templateData, "utf8");
-		console.log("✅ Successfully created 'mtt-data.json' from template.");
+		console.log("Data file not found. Creating a new empty data file.");
+		fs.writeFileSync(DATA_FILE_PATH, "[]", "utf8");
+		console.log("✅ Successfully created 'mtt-data.json'.");
 	} catch (error) {
 		console.error("❌ CRITICAL ERROR: Could not create data file.", error);
 		process.exit(1);
@@ -49,11 +43,57 @@ const initializeActiveStateFile = () => {
 	}
 };
 
-// --- Initialize data files before starting the server ---
+// --- Pre-flight Check: Ensure suggestions file exists on startup ---
+const initializeSuggestionsFile = () => {
+	if (fs.existsSync(SUGGESTIONS_PATH)) {
+		console.log("✅ Suggestions file 'mtt-suggestions.json' already exists.");
+		return;
+	}
+	try {
+		console.log("Creating new suggestions file with default values...");
+		const defaultSuggestions = [
+			"Project Gemini / Coding",
+			"Project Gemini / Documentation",
+			"Internal Admin / Meetings",
+			"Internal Admin / Email Response",
+			"Client X / Proposal Draft",
+			"Learning / Tutorial Videos",
+		];
+		fs.writeFileSync(
+			SUGGESTIONS_PATH,
+			JSON.stringify(defaultSuggestions, null, 2),
+			"utf8"
+		);
+		console.log("✅ Successfully created 'mtt-suggestions.json'.");
+	} catch (error) {
+		console.error(
+			"❌ CRITICAL ERROR: Could not create suggestions file.",
+			error
+		);
+		process.exit(1);
+	}
+};
+
+// --- Initialize all necessary files before starting the server ---
 initializeDataFile();
 initializeActiveStateFile();
+initializeSuggestionsFile();
 
 const server = http.createServer((req, res) => {
+	// --- API Endpoint: /api/suggestions ---
+	if (req.url === "/api/suggestions" && req.method === "GET") {
+		fs.readFile(SUGGESTIONS_PATH, "utf8", (err, data) => {
+			if (err) {
+				res.writeHead(500, { "Content-Type": "application/json" });
+				res.end(JSON.stringify({ message: "Error reading suggestions file" }));
+				return;
+			}
+			res.writeHead(200, { "Content-Type": "application/json" });
+			res.end(data);
+		});
+		return;
+	}
+
 	// --- API Endpoint: /api/active-state ---
 	if (req.url === "/api/active-state") {
 		// GET: Read and return the active state file

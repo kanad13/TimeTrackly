@@ -120,6 +120,7 @@
 	<script>
 		// --- Global State ---
 		let historicalEntries = []; // Holds all completed data from mtt-data.json
+		let predefinedSuggestions = []; // Holds suggestions from mtt-suggestions.json
 		let activeTimers = {}; // { uuid: { project, task, startTime, accumulatedMs, isPaused } }
 		let timerInterval = null;
 		let activeChartInstances = []; // To destroy and recreate charts
@@ -208,6 +209,18 @@
 			noActiveMessage.classList.toggle('hidden', Object.keys(activeTimers).length > 0);
 		};
 
+		const loadSuggestionsFromServer = async () => {
+			try {
+				const response = await fetch("/api/suggestions");
+				if (!response.ok) throw new Error(`Server responded with ${response.status}`);
+				predefinedSuggestions = await response.json();
+			} catch (error) {
+				console.error("Could not load suggestions from server.", error);
+				// App can continue with an empty list of predefined suggestions
+				predefinedSuggestions = [];
+			}
+		};
+
 		// --- Utility Functions ---
 		const generateUUID = () => crypto.randomUUID();
 
@@ -236,26 +249,19 @@
 		};
 
 		// --- Datalist and Suggestions ---
-		const HARDCODED_SUGGESTIONS = ["Project Gemini / Coding", "Project Gemini / Documentation", "Internal Admin / Meetings", "Internal Admin / Email Response", "Client X / Proposal Draft", "Learning / Tutorial Videos"];
-
-		const populateSuggestions = (recentActivities = []) => {
+		const populateSuggestions = () => {
 			suggestionsDatalist.innerHTML = '';
-			const combined = new Set([...HARDCODED_SUGGESTIONS, ...recentActivities]);
+			const recentActivities = new Set(
+				historicalEntries.map(entry =>
+					(entry.project && entry.task) ? `${entry.project.trim()} / ${entry.task.trim()}` : null
+				).filter(Boolean)
+			);
+			const combined = new Set([...predefinedSuggestions, ...recentActivities]);
 			combined.forEach(activity => {
 				const option = document.createElement('option');
 				option.value = activity;
 				suggestionsDatalist.appendChild(option);
 			});
-		};
-
-		const fetchRecentActivities = () => {
-			const activities = new Set();
-			historicalEntries.forEach((entry) => {
-				if (entry.project && entry.task) {
-					activities.add(`${entry.project.trim()} / ${entry.task.trim()}`);
-				}
-			});
-			populateSuggestions(Array.from(activities));
 		};
 
 		// --- Core UI Management ---
@@ -457,7 +463,7 @@
 			activeTimersList.insertAdjacentElement('afterend', tempStatus);
 			setTimeout(() => tempStatus.remove(), 4000);
 
-			fetchRecentActivities(); // Refresh suggestions
+			populateSuggestions(); // Refresh suggestions
 		};
 
 		const exportData = () => {
@@ -558,14 +564,15 @@
 			startButton.addEventListener('click', startNewTimer);
 			exportButton.addEventListener('click', exportData);
 
-			await loadDataFromServer();       // 1. Load historical data
-			await loadActiveStateFromServer();  // 2. Load active timers from server
+			await loadSuggestionsFromServer();  // 1. Load predefined suggestions
+			await loadDataFromServer();       // 2. Load historical data
+			await loadActiveStateFromServer();  // 3. Load active timers from server
 
-			renderActiveTimers();               // 3. Render the UI with loaded state
-			fetchRecentActivities();            // 4. Populate suggestions
+			renderActiveTimers();               // 4. Render the UI with loaded state
+			populateSuggestions();              // 5. Populate suggestions list
 
 			if (Object.values(activeTimers).some(t => !t.isPaused)) {
-				startTimerDisplay();            // 5. Start the timer display loop if needed
+				startTimerDisplay();            // 6. Start the timer display loop if needed
 			}
 		};
 

@@ -1,6 +1,6 @@
 # Local Setup and Execution Guide
 
-The Multi-Task Time Tracker (MTTT)  runs as a local application on your machine using Node.js. This ensures your data remains private and provides a consistent experience across all browsers.
+The Multi-Task Time Tracker (MTTT) runs as a local application on your machine using Node.js. This ensures your data remains private and provides a consistent experience across all browsers.
 
 ## 1. Prerequisites
 
@@ -11,6 +11,8 @@ The Multi-Task Time Tracker (MTTT)  runs as a local application on your machine 
 1.  **Open Terminal:** Navigate to the project directory (`mttt-tracker`) in your terminal or command prompt.
 2.  **Install Dependencies:** Run the following command. (Note: This project has no external dependencies, but this is a standard step).
     `npm install`
+
+    Upon first startup, the server will automatically create the necessary data files if they don't exist: `mtt-data.json`, `mtt-active-state.json`, and `mtt-suggestions.json`.
 
 ## 3. Running the Application
 
@@ -42,3 +44,11 @@ PM2 is a process manager for Node.js that will keep your server running in the b
 
 4.  **Save the Process:** To make PM2 automatically restart the server after a system reboot, run:
     `pm2 save`
+
+## 4. Customizing Your Suggestions
+
+You can easily edit your list of default "Project / Task" suggestions.
+
+1.  **Open the File:** In the project's root directory, open the `mtt-suggestions.json` file with any text editor.
+2.  **Edit the Contents:** Add, remove, or modify the string entries in the JSON array. Make sure to maintain the correct JSON format.
+3.  **Save and Refresh:** Save the file and simply refresh your browser window. The new suggestions will appear in the input dropdown. No server restart is required.
