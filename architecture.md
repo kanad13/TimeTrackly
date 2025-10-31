@@ -15,22 +15,24 @@
 
 ### 1.2. Data Persistence and Security
 
-- **Technology:** Google Cloud Firestore is the sole persistence layer
-- **Security Path:** All data must be written to the private, user-specific collection: `/artifacts/{appId}/users/{userId}/entries`
+- **Technology:** Google Sheets API is the sole persistence layer
+- **Security Path:** All data is written to a user-owned Google Sheet specified by the user via Spreadsheet ID
+- **Authentication:** Google OAuth 2.0 with scope `https://www.googleapis.com/auth/spreadsheets`
 - **Data Model (Time Entry):**
   - Due to the Pause/Resume feature, the traditional `startTime`/`endTime` pair is no longer sufficient
   - The definitive record is the total accumulated duration at the time the timer is stopped
+  - Data is stored in a Google Sheet with the following columns (must be in this exact order):
 
-| Field             | Type      | Description                                            |
-| ----------------- | --------- | ------------------------------------------------------ |
-| `project`         | String    | Top-level category (crucial for grouping)              |
-| `task`            | String    | Nested activity detail                                 |
-| `totalDurationMs` | Number    | The accurate, accumulated time in milliseconds         |
-| `durationSeconds` | Number    | Human-readable, rounded duration at save time          |
-| `endTime`         | Timestamp | Time when the timer was definitively stopped and saved |
+| Column            | Type   | Description                                             |
+| ----------------- | ------ | ------------------------------------------------------- |
+| `project`         | String | Top-level category (crucial for grouping)               |
+| `task`            | String | Nested activity detail                                  |
+| `totalDurationMs` | Number | The accurate, accumulated time in milliseconds          |
+| `durationSeconds` | Number | Human-readable, rounded duration at save time           |
+| `endTime`         | String | ISO 8601 timestamp when the timer was stopped and saved |
 
 - **Data Fetch for Reports:**
-  - **Query:** Reports view queries ALL historical documents for client-side aggregation
+  - **Query:** Reports view uses `spreadsheets.values.get` API to fetch ALL rows for client-side aggregation
 
 ## 2. Design and User Experience (UX) Rationale
 
@@ -55,26 +57,9 @@
 - **Mechanism:** The `<datalist>` dynamically provides suggestions by combining hardcoded templates and the most recent unique Project / Task strings fetched from Firestore
 - **UX Goal:** Reduce typing and ensure consistency in data entry, which is vital for accurate long-term reporting
 
-### 2.4. Reports View (P2 Completed)
+### 2.4. Reports View
 
 - **Pattern:** A separate tabbed interface is used to switch between the active Tracker and the Reports view
-- **Implementation:** Uses Chart.js via CDN to dynamically generate two charts based on all historical Firestore data:
+- **Implementation:** Uses Chart.js via CDN to dynamically generate two charts based on all historical Google Sheets data:
   - **Project Time Distribution (Doughnut Chart):** Shows percentage of time spent per project
   - **Daily Time Logged (Bar Chart):** Shows total time logged for the last 7 days
-
-## 3. AI Agent Development Roadmap
-
-- Future development using AI agents should focus on refactoring for quality and adding core analysis features
-
-| Priority | Task                        | Agent Focus & Requirements                                                                                                                                                                                                                  |
-| -------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| P1       | Refactor to React Component | Migrate all UI rendering and state logic to a single `App.jsx` functional component. Preserve all existing features (Pause/Delete, Collapsible UI, Firestore logic, and P2 Reports).                                                        |
-| ~~P2~~   | ~~In-App Visualization~~    | COMPLETED.                                                                                                                                                                                                                                  |
-| P3       | Data Filtering              | Implement a simple UI component allowing users to filter the historical data exported (or viewed in P2) by Date Range and Project Name. This requires updating the `renderReportsView` function to handle UI filter inputs before charting. |
-| P4       | Query Optimization          | Explore adding Firestore indices (if permitted by the environment) or optimizing the bulk data retrieval for faster visualization loading.                                                                                                  |
-
-- **Agent Constraint Checklist:**
-  - Single-File: Yes
-  - Preserve Firestore Schema: Yes
-  - Utilize Global Auth: Yes
-  - No Build Step: Yes
