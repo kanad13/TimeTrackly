@@ -331,8 +331,14 @@ async function testStopTimer(page) {
 async function testDeleteTimer(page) {
 	console.log("\n📋 Test 7: Delete Timer");
 
+	// Clear input field first
+	await page.evaluate(() => {
+		document.getElementById("topic-input").value = "";
+	});
+
 	// Start a new timer
 	await page.type("#topic-input", "Delete Test / Task");
+	await delay(300);
 	await page.click("#start-button");
 	await delay(1000);
 

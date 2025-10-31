@@ -9,6 +9,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     strategy:
       matrix:
@@ -25,14 +26,17 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+        timeout-minutes: 10
 
       - name: Run unit tests
         run: npm run test:unit
+        timeout-minutes: 5
 
       - name: Start server
         run: |
           npm start &
           echo $! > server.pid
+        timeout-minutes: 2
 
       - name: Wait for server
         run: |
@@ -46,12 +50,15 @@ jobs:
           done
           echo "Server failed to start"
           exit 1
+        timeout-minutes: 2
 
       - name: Run backend API tests
         run: npm run test:api
+        timeout-minutes: 10
 
       - name: Run E2E tests
         run: HEADLESS=true npm run test:e2e
+        timeout-minutes: 10
 
       - name: Upload screenshots
         if: always()
@@ -68,6 +75,7 @@ jobs:
             kill $(cat server.pid) || true
             rm server.pid
           fi
+        timeout-minutes: 2
 
       - name: Upload test results
         if: failure()
