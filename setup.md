@@ -1,10 +1,10 @@
 # Local Setup and Execution Guide
 
-The Multi-Task Time Tracker (MTTT) runs as a local application on your machine using Node.js. This ensures your data remains private and provides a consistent experience across all browsers.
+The Multi-Task Time Tracker (MTTT) runs as a local application on your machine using Node.js. The application features a modular architecture with robust error handling to ensure your data remains private and provides a consistent experience across all browsers.
 
 ## 1. Prerequisites
 
-- **Node.js:** You must have Node.js installed on your system. You can download it from [nodejs.org](https://nodejs.org/).
+- **Node.js:** You must have Node.js installed on your system (v13 or higher recommended). You can download it from [nodejs.org](https://nodejs.org/).
 
 ## 2. First-Time Setup
 
@@ -16,7 +16,7 @@ The Multi-Task Time Tracker (MTTT) runs as a local application on your machine u
 
 ## 3. Running the Application
 
-There are two ways to run the server:
+There are multiple ways to run the server:
 
 ### A) Standard Mode (Recommended for general use)
 
@@ -25,7 +25,13 @@ There are two ways to run the server:
 2.  **Access the App:** Open your web browser and navigate to `http://localhost:13331`.
 3.  To stop the server, go back to the terminal and press `Ctrl + C`.
 
-### B) Background Mode with PM2 (For continuous use)
+### B) Development Mode (With detailed logging)
+
+1.  **Start in Dev Mode:** In your terminal, run:
+    `npm run dev`
+2.  This mode provides more verbose logging to help debug issues.
+
+### C) Background Mode with PM2 (For continuous use)
 
 PM2 is a process manager for Node.js that will keep your server running in the background. This is a "fire-and-forget" solution.
 
@@ -45,7 +51,31 @@ PM2 is a process manager for Node.js that will keep your server running in the b
 4.  **Save the Process:** To make PM2 automatically restart the server after a system reboot, run:
     `pm2 save`
 
-## 4. Customizing Your Suggestions
+## 4. Health Check and Monitoring
+
+The server includes a health endpoint to verify the application is running correctly:
+
+**Check Server Health:**
+
+```bash
+npm run health
+```
+
+This will display the server status, uptime, and confirm all data files are accessible.
+
+## 5. Backup Your Data
+
+You can create manual backups of your time tracking data:
+
+**Create Backup:**
+
+```bash
+npm run backup
+```
+
+This copies all `mtt-*.json` files to a timestamped backup directory. However, since you're using Git, regular commits provide automatic versioning of your data files.
+
+## 6. Customizing Your Suggestions
 
 You can easily edit your list of default "Project / Task" suggestions.
 

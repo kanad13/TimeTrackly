@@ -1,7 +1,8 @@
 # Multi-Task Time Tracker (MTTT)
 
-- The Multi-Task Time Tracker (MTTT) is a highly portable, locally-hosted web application for tracking time across multiple hierarchical activities (Project / Task).
+- The Multi-Task Time Tracker (MTTT) is a highly portable, locally-hosted web application designed for single-user time tracking across multiple hierarchical activities (Project / Task).
 - It provides real-time monitoring, private data persistence via local files, and flexible data export options.
+- Built with reliability and data integrity as core principles, MTTT is designed for personal use with complete privacy and zero external dependencies.
 
 ## 1. Features at a Glance
 
@@ -12,6 +13,8 @@
 - **Smart, Configurable Input:** Autocomplete suggestions are populated from a user-editable `mtt-suggestions.json` file and your own recent entries.
 - **Data Integrity:** Prevents concurrent tracking of the exact same Project / Task combination.
 - **Private & Durable Local Storage:** All data is stored locally in human-readable JSON files, ensuring 100% privacy and durability.
+- **Health Monitoring:** Built-in health check endpoint to verify server status and data file integrity.
+- **Reliable Data Handling:** Atomic file writes and automatic input sanitization ensure data integrity.
 
 ## 2. How to Use the Application
 
@@ -39,13 +42,13 @@ Once the server is running, the workflow is simple and intuitive.
 
 - The application runs locally using a simple Node.js server with zero external dependencies.
 
-| Component     | Technology                                                    | Role                                                                                 |
-| :------------ | :------------------------------------------------------------ | :----------------------------------------------------------------------------------- |
-| Client        | HTML5, Vanilla JavaScript, Tailwind CSS (CDN), Chart.js (CDN) | UI, logic, state management, and visualization                                       |
-| Backend       | Node.js (with built-in `http` and `fs` modules)               | Local web server and file I/O for state synchronization                              |
-| Data Storage  | `mtt-data.json` & `mtt-active-state.json`                     | JSON-based persistence for **historical** and **in-progress** data, respectively     |
-| Configuration | `mtt-suggestions.json`                                        | A user-editable JSON file for populating default "Project / Task" input suggestions. |
-| Deployment    | Local Machine Execution                                       | Run via `npm start`                                                                  |
+| Component     | Technology                                                                 | Role                                                                                 |
+| :------------ | :------------------------------------------------------------------------- | :----------------------------------------------------------------------------------- |
+| Client        | HTML5, ES6 Modules, Vanilla JavaScript, Tailwind CSS (CDN), Chart.js (CDN) | Modular UI with 7 ES6 modules for separation of concerns                             |
+| Backend       | Node.js (with built-in `http`, `fs.promises`, and `path` modules)          | Local web server with atomic file I/O and health monitoring                          |
+| Data Storage  | `mtt-data.json` & `mtt-active-state.json`                                  | JSON-based persistence for **historical** and **in-progress** data, respectively     |
+| Configuration | `mtt-suggestions.json`                                                     | A user-editable JSON file for populating default "Project / Task" input suggestions. |
+| Deployment    | Local Machine Execution                                                    | Run via `npm start` or `npm run dev`                                                 |
 
 ## 4. Getting Started
 
