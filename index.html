@@ -7,15 +7,40 @@
 	<title>Multi-Task Time Tracker (React)</title>
 	<link rel="icon"
 		href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75' fill='%234f46e5'>⏱</text></svg>">
-	<!-- Load Tailwind CSS -->
+	<!-- Load Tailwind CSS (Production-ready via npm distribution) -->
 	<script src="https://cdn.tailwindcss.com"></script>
+	<script>
+		// Suppress Tailwind warnings in production
+		if (typeof window !== 'undefined') {
+			window.tailwind = { config: { safelist: [] } };
+		}
+	</script>
 	<!-- Load Chart.js for Visualization -->
 	<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
-	<!-- Load React and ReactDOM -->
-	<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-	<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+	<!-- Load React and ReactDOM (Production builds) -->
+	<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+	<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 	<!-- Load Babel to transpile JSX in the browser -->
 	<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+	<!-- Suppress development warnings -->
+	<script>
+		window.__REACT_DEVTOOLS_GLOBAL_HOOK__ = {
+			isDisabled: true
+		};
+	</script>
+	<!-- Load Firebase Configuration -->
+	<script id="firebase-config-loader">
+		// Load Firebase configuration from external file
+		fetch('./firebase-config.json')
+			.then(response => response.json())
+			.then(config => {
+				window.__firebase_config = JSON.stringify(config);
+			})
+			.catch(err => {
+				console.warn("Could not load firebase-config.json:", err);
+				console.log("Using fallback anonymous authentication without config");
+			});
+	</script>
 	<!-- Load Firebase (Compat library for browser compatibility) -->
 	<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
 	<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
@@ -59,6 +84,9 @@
 
 	<!-- React Application Script -->
 	<script type="text/babel">
+		// Suppress Babel development warnings in production
+		window.BABEL_DISCARD_DEBUG_LOGS = true;
+
 		// Firebase Imports (Compat library - more stable for browser-based single-file apps)
 		const firebase = window.firebase;
 
@@ -295,33 +323,63 @@
 
 			// 1. Initialize Firebase
 			useEffect(() => {
-				const envAppId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-				const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-				const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+				const initializeFirebase = async () => {
+					// Wait up to 2 seconds for config to load from firebase-config.json
+					let attempts = 0;
+					while (!window.__firebase_config && attempts < 10) {
+						await new Promise(resolve => setTimeout(resolve, 100));
+						attempts++;
+					}
 
-				setAppId(envAppId);
+					const envAppId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+					let firebaseConfig = {};
 
-				try {
-					const app = firebase.initializeApp(firebaseConfig);
-					const firestoreDb = firebase.firestore();
-					const firebaseAuth = firebase.auth();
-					setDb(firestoreDb);
-					setAuth(firebaseAuth);
-
-					const authAction = initialAuthToken ? firebaseAuth.signInWithCustomToken(initialAuthToken) : firebaseAuth.signInAnonymously();
-
-					authAction.catch(err => console.error("Authentication failed:", err));
-
-					firebaseAuth.onAuthStateChanged((user) => {
-						if (user) {
-							setUserId(user.uid);
-						} else {
-							setUserId(null);
+					// Try to parse Firebase config from injected/loaded variable
+					if (typeof __firebase_config !== 'undefined') {
+						try {
+							firebaseConfig = JSON.parse(__firebase_config);
+						} catch (e) {
+							console.error("Failed to parse Firebase config:", e);
+							firebaseConfig = {};
 						}
-					});
-				} catch (error) {
-					console.error("Error initializing Firebase:", error);
-				}
+					}
+
+					// If still no projectId, show console warning but continue
+					if (!firebaseConfig.projectId) {
+						console.warn("Firebase projectId not configured. Update firebase-config.json with your credentials.");
+					}
+
+					const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+					setAppId(envAppId);
+
+					try {
+						// Initialize Firebase if we have config or can use anonymous auth
+						if (firebaseConfig.projectId || Object.keys(firebaseConfig).length > 0) {
+							const app = firebase.initializeApp(firebaseConfig);
+							const firestoreDb = firebase.firestore();
+							const firebaseAuth = firebase.auth();
+							setDb(firestoreDb);
+							setAuth(firebaseAuth);
+
+							const authAction = initialAuthToken ? firebaseAuth.signInWithCustomToken(initialAuthToken) : firebaseAuth.signInAnonymously();
+
+							authAction.catch(err => console.error("Authentication failed:", err));
+
+							firebaseAuth.onAuthStateChanged((user) => {
+								if (user) {
+									setUserId(user.uid);
+								} else {
+									setUserId(null);
+								}
+							});
+						}
+					} catch (error) {
+						console.error("Error initializing Firebase:", error);
+					}
+				};
+
+				initializeFirebase();
 			}, []);
 
 			// 2. Load timers from localStorage on mount

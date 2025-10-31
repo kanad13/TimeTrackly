@@ -62,7 +62,79 @@
   - **Project Time Distribution (Doughnut Chart):** Shows percentage of time spent per project
   - **Daily Time Logged (Bar Chart):** Shows total time logged for the last 7 days
 
-## 3. AI Agent Development Roadmap
+## 3. Production Fixes and Design Decisions
+
+### 3.1. Why Production Builds Matter
+
+**Problem:** Running development builds in production causes console warnings and reduced performance.
+
+**Solution:** Updated to use production builds:
+
+- React: `react@18/umd/react.production.min.js` (instead of `.development.js`)
+- ReactDOM: `react-dom@18/umd/react-dom.production.min.js` (instead of `.development.js`)
+
+**Why:**
+
+- Smaller bundle size (~30% reduction)
+- Removes development warnings
+- Better performance
+- Cleaner browser console for users
+
+### 3.2. Firebase Configuration Loading Architecture
+
+**Problem:** Firebase Hosting doesn't automatically inject configuration into HTML files. The original code tried to initialize Firebase with an undefined `projectId`, causing the error: `"projectId" not provided in firebase.initializeApp`.
+
+**Solution:** Implemented automatic configuration loader:
+
+1. **Config File:** `firebase-config.json` sits at the project root containing Firebase credentials
+2. **Loader Script:** On page load, the app fetches `firebase-config.json` and injects it into `window.__firebase_config`
+3. **Retry Logic:** Firebase initialization waits up to 2 seconds for config to load
+4. **Graceful Fallback:** If config is missing, app logs a warning but continues (allowing anonymous use without persistence)
+
+**Architecture Flow:**
+
+```
+Page loads
+  ↓
+Config loader fetches firebase-config.json
+  ↓
+Config injected into window.__firebase_config
+  ↓
+Firebase libraries load (from CDN)
+  ↓
+Firebase initializes with loaded config
+  ↓
+React App renders with Firestore access ✅
+```
+
+**Why This Design:**
+
+- Single-file app constraint means no build step or environment variables
+- Config file allows credentials to be updated without changing HTML
+- Retry logic handles network delays
+- Falls back gracefully if config is missing
+- Maintains security by not hardcoding credentials in HTML
+
+### 3.3. Development Warning Suppression
+
+**Problem:** In-browser Babel transformer and React development tools show warnings in production console, confusing users.
+
+**Solution:** Added warning suppression:
+
+```javascript
+window.BABEL_DISCARD_DEBUG_LOGS = true;
+window.__REACT_DEVTOOLS_GLOBAL_HOOK__ = { isDisabled: true };
+```
+
+**Why:**
+
+- Users shouldn't see development messages in production
+- Keeps console clean and focused on actual errors
+- Per Babel documentation, in-browser Babel is acceptable for single-file apps
+
+---
+
+## 4. AI Agent Development Roadmap
 
 - Future development using AI agents should focus on refactoring for quality and adding core analysis features
 

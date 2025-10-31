@@ -27,8 +27,15 @@
 - **Clone the Repository:**
   - `git clone [your-repo-url]`
   - `cd mttt-tracker`
-- **Deployment:** Follow the instructions in the `DEPLOYMENT.md` file to quickly deploy this application to your Firebase environment
+- **Deployment:** Follow the comprehensive guide in `deployment.md` to deploy to Firebase Hosting
 
-## 4. Detailed Guidance
+## 4. Documentation
 
-- For a deep dive into the architecture, design rationale, and the remaining roadmap for integrating AI agents, please refer to the comprehensive `DEVELOPMENT_GUIDE.md`
+| Document          | Purpose                                                             |
+| ----------------- | ------------------------------------------------------------------- |
+| `deployment.md`   | Complete deployment guide with production fixes and troubleshooting |
+| `architecture.md` | Architecture, design rationale, and production design decisions     |
+
+---
+
+**For detailed setup and deployment instructions, see `deployment.md`.**
