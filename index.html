@@ -7,7 +7,7 @@
 	<title>Multi-Task Time Tracker</title>
 	<!-- Load Tailwind CSS -->
 	<script src="https://cdn.tailwindcss.com"></script>
-	<!-- Load Chart.js for Visualization (P2 Completion) -->
+	<!-- Load Chart.js for Visualization -->
 	<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 	<!-- Configure Font -->
 	<style>
@@ -116,22 +116,15 @@
 		<p class="text-sm text-center text-gray-400 mt-6" id="user-id-display">User ID: Loading...</p>
 	</div>
 
-	<!-- Firebase Imports and Setup -->
-	<script type="module">
-		import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-		import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-		import { getFirestore, collection, addDoc, query, getDocs, Timestamp, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-		// Global variables provided by the environment
-		const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-		const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-		const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-		let db, auth, userId = null;
+	<!-- Local Application Logic -->
+	<script>
+		// --- Global State ---
+		let historicalEntries = []; // This will hold all data from mtt-data.json
 		let activeTimers = {}; // { uuid: { project, task, startTime, accumulatedMs, isPaused } }
 		let timerInterval = null;
 		let activeChartInstances = []; // To destroy and recreate charts
 
+		// --- DOM Element References ---
 		const topicInput = document.getElementById('topic-input');
 		const startButton = document.getElementById('start-button');
 		const exportButton = document.getElementById('export-button');
@@ -141,15 +134,42 @@
 		const userIdDisplay = document.getElementById('user-id-display');
 		const errorMessage = document.getElementById('error-message');
 		const suggestionsDatalist = document.getElementById('activity-suggestions');
-
 		const reportsLoading = document.getElementById('reports-loading');
 		const reportsError = document.getElementById('reports-error');
 		const reportsContent = document.getElementById('reports-content');
 
-		setLogLevel('debug');
+		// --- API Communication Layer ---
+		const loadDataFromServer = async () => {
+			try {
+				const response = await fetch("/api/data");
+				if (!response.ok) {
+					throw new Error(`Server responded with ${response.status}`);
+				}
+				const data = await response.json();
+				historicalEntries = data.map((entry) => ({
+					...entry,
+					endTime: new Date(entry.endTime), // Convert ISO string back to Date object
+				}));
+			} catch (error) {
+				console.error("FATAL: Could not load data from server.", error);
+				document.getElementById("app").innerHTML = `<div class='text-red-600 text-center p-8'><h1>Connection Error</h1><p>Could not connect to the local server. Is it running? Please start the server and refresh the page.</p></div>`;
+			}
+		};
+
+		const saveDataToServer = async () => {
+			try {
+				await fetch("/api/data", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify(historicalEntries, null, 2),
+				});
+			} catch (error) {
+				console.error("Error saving data:", error);
+				// Optionally show a "failed to save" UI indicator
+			}
+		};
 
 		// --- Utility Functions ---
-
 		const generateUUID = () => crypto.randomUUID();
 
 		const formatDuration = (seconds) => {
@@ -157,11 +177,6 @@
 			const m = Math.floor((seconds % 3600) / 60);
 			const s = seconds % 60;
 			return [h, m, s].map(v => v < 10 ? "0" + v : v).join(':');
-		};
-
-		const getEntriesCollection = () => {
-			if (!db || !userId) throw new Error("Database not ready.");
-			return collection(db, `/artifacts/${appId}/users/${userId}/entries`);
 		};
 
 		const getRunningTasksKey = (project, task) => `${project.toLowerCase()}:${task.toLowerCase()}`;
@@ -174,7 +189,6 @@
 			return elapsed;
 		};
 
-		// Function to generate distinct colors for charts
 		const getDistinctColors = (count) => {
 			const colors = [
 				'#4f46e5', '#f97316', '#10b981', '#ef4444', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'
@@ -207,31 +221,17 @@
 			});
 		};
 
-		const fetchRecentActivities = async () => {
-			if (!db || !userId) return;
-			try {
-				const q = query(getEntriesCollection());
-				const querySnapshot = await getDocs(q);
-
-				const activities = new Set();
-				querySnapshot.forEach((doc) => {
-					const data = doc.data();
-					if (data.project && data.task) {
-						activities.add(`${data.project.trim()} / ${data.task.trim()}`);
-					}
-				});
-
-				populateSuggestions(Array.from(activities));
-
-			} catch (error) {
-				console.error("Error fetching recent activities for suggestions:", error);
-				populateSuggestions([]);
-			}
+		const fetchRecentActivities = () => {
+			const activities = new Set();
+			historicalEntries.forEach((entry) => {
+				if (entry.project && entry.task) {
+					activities.add(`${entry.project.trim()} / ${entry.task.trim()}`);
+				}
+			});
+			populateSuggestions(Array.from(activities));
 		};
 
-		// --- Core State and UI Management (omitted for brevity, assume same as previous version) ---
-		// (saveActiveTimers, loadActiveTimers, updateTimerDisplay, startTimerDisplay, startNewTimer, toggleTimer, deleteTimer, stopTimer)
-
+		// --- Core State and UI Management ---
 		const saveActiveTimers = () => {
 			const serializableTimers = {};
 			for (const id in activeTimers) {
@@ -473,7 +473,6 @@
 			renderActiveTimers();
 		};
 
-
 		const stopTimer = async (id) => {
 			const activity = activeTimers[id];
 			if (!activity) return;
@@ -501,88 +500,76 @@
 				task: activity.task,
 				totalDurationMs: finalDurationMs,
 				durationSeconds: durationSeconds,
-				endTime: Timestamp.fromDate(endTime),
-				userId: userId,
-				createdAt: Timestamp.now()
+				endTime: endTime.toISOString(), // Save as ISO string for JSON compatibility
+				createdAt: new Date().toISOString()
 			};
+
+			// --- REPLACEMENT LOGIC START ---
+			historicalEntries.push(newEntry);
+			await saveDataToServer();
 
 			const tempStatus = document.createElement('p');
 			tempStatus.className = 'text-center text-sm text-blue-600 mt-2';
 			activeTimersList.insertAdjacentElement('afterend', tempStatus);
 			tempStatus.textContent = `Saving ${activity.project} / ${activity.task} ...`;
 
-			try {
-				await addDoc(getEntriesCollection(), newEntry);
-				tempStatus.textContent = `Saved ${activity.project} / ${activity.task} (${formatDuration(durationSeconds)})`;
-				tempStatus.className = 'text-center text-sm text-green-600 mt-2';
-				setTimeout(() => tempStatus.remove(), 4000);
+			tempStatus.textContent = `Saved ${activity.project} / ${activity.task} (${formatDuration(durationSeconds)})`;
+			tempStatus.className = 'text-center text-sm text-green-600 mt-2';
+			setTimeout(() => tempStatus.remove(), 4000);
 
-				fetchRecentActivities();
-
-			} catch (e) {
-				console.error("Error adding document: ", e);
-				tempStatus.textContent = `ERROR saving ${activity.project} / ${activity.task}. Check console.`;
-				tempStatus.className = 'text-center text-sm text-red-600 mt-2';
-			}
+			fetchRecentActivities(); // This will now read from the in-memory array
+			// --- REPLACEMENT LOGIC END ---
 		};
 
-		const exportData = async () => {
-			if (!userId) { console.error("User not authenticated."); return; }
-
-			exportButton.textContent = 'Fetching Data...';
+		const exportData = () => {
+			exportButton.textContent = 'Generating CSV...';
 			exportButton.disabled = true;
 
-			try {
-				const q = query(getEntriesCollection());
-				const querySnapshot = await getDocs(q);
-
-				let data = [];
-				querySnapshot.forEach((doc) => {
-					const entry = doc.data();
-					const durationMinutes = (entry.durationSeconds / 60).toFixed(2);
-					data.push({
-						id: doc.id,
-						project: entry.project || 'N/A',
-						task: entry.task || 'N/A',
-						endTime: entry.endTime ? entry.endTime.toDate().toISOString() : 'N/A',
-						durationSeconds: entry.durationSeconds,
-						durationMinutes: durationMinutes,
-						totalDurationMs: entry.totalDurationMs
-					});
-				});
-
-				if (data.length === 0) { console.log('No data entries found to export.'); return; }
-
-				const headers = ["id", "project", "task", "endTime", "durationSeconds", "durationMinutes", "totalDurationMs"];
-				const csvRows = [];
-				csvRows.push(headers.join(','));
-
-				for (const row of data) {
-					const values = headers.map(header => {
-						const value = row[header] ? ('' + row[header]) : '';
-						const escaped = value.replace(/"/g, '""');
-						return `"${escaped}"`;
-					});
-					csvRows.push(values.join(','));
+			let data = historicalEntries.map(entry => {
+				const durationMinutes = (entry.durationSeconds / 60).toFixed(2);
+				return {
+					project: entry.project || 'N/A',
+					task: entry.task || 'N/A',
+					endTime: entry.endTime ? (new Date(entry.endTime)).toISOString() : 'N/A',
+					durationSeconds: entry.durationSeconds,
+					durationMinutes: durationMinutes,
+					totalDurationMs: entry.totalDurationMs
 				}
+			});
 
-				const csvString = csvRows.join('\n');
-				const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-				const link = document.createElement('a');
-				link.href = URL.createObjectURL(blob);
-				link.download = `time_tracker_export_${new Date().toISOString().split('T')[0]}.csv`;
-				document.body.appendChild(link);
-				link.click();
-				document.body.removeChild(link);
 
-				console.log(`Exported ${data.length} entries.`);
-
-			} catch (error) {
-				console.error("Error exporting data:", error);
-			} finally {
+			if (data.length === 0) {
+				console.log('No data entries found to export.');
 				exportButton.textContent = 'Export All Data (CSV)';
 				exportButton.disabled = false;
+				return;
 			}
+
+			const headers = ["project", "task", "endTime", "durationSeconds", "durationMinutes", "totalDurationMs"];
+			const csvRows = [];
+			csvRows.push(headers.join(','));
+
+			for (const row of data) {
+				const values = headers.map(header => {
+					const value = row[header] ? ('' + row[header]) : '';
+					const escaped = value.replace(/"/g, '""');
+					return `"${escaped}"`;
+				});
+				csvRows.push(values.join(','));
+			}
+
+			const csvString = csvRows.join('\n');
+			const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+			const link = document.createElement('a');
+			link.href = URL.createObjectURL(blob);
+			link.download = `time_tracker_export_${new Date().toISOString().split('T')[0]}.csv`;
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+
+			console.log(`Exported ${data.length} entries.`);
+			exportButton.textContent = 'Export All Data (CSV)';
+			exportButton.disabled = false;
 		};
 
 		// --- Tab Switching Logic ---
@@ -601,186 +588,144 @@
 		document.getElementById('tab-tracker').addEventListener('click', () => switchTab('tracker'));
 		document.getElementById('tab-reports').addEventListener('click', () => switchTab('reports'));
 
-
-		// --- REPORT GENERATION (P2 Implementation) ---
-
-		const renderReportsView = async () => {
-			if (!userId) { return; }
-
+		// --- REPORT GENERATION ---
+		const renderReportsView = () => {
 			reportsLoading.classList.remove('hidden');
 			reportsContent.classList.add('hidden');
 			reportsError.classList.add('hidden');
 
-			// Destroy existing charts to prevent memory leaks and canvas conflicts
 			activeChartInstances.forEach(chart => chart.destroy());
 			activeChartInstances = [];
 
-			try {
-				const q = query(getEntriesCollection());
-				const querySnapshot = await getDocs(q);
+			const allEntries = historicalEntries; // Use the global array directly
 
-				const allEntries = [];
-				querySnapshot.forEach(doc => allEntries.push(doc.data()));
+			if (allEntries.length === 0) {
+				reportsLoading.textContent = "No data recorded yet. Start tracking to see reports!";
+				return;
+			}
 
-				if (allEntries.length === 0) {
-					reportsLoading.textContent = "No data recorded yet. Start tracking to see reports!";
-					return;
-				}
+			// 1. Prepare Data for Project Pie Chart
+			const projectDurations = allEntries.reduce((acc, entry) => {
+				const project = entry.project || 'Unknown';
+				acc[project] = (acc[project] || 0) + entry.totalDurationMs;
+				return acc;
+			}, {});
 
-				// 1. Prepare Data for Project Pie Chart
-				const projectDurations = allEntries.reduce((acc, entry) => {
-					const project = entry.project || 'Unknown';
-					acc[project] = (acc[project] || 0) + entry.totalDurationMs;
-					return acc;
-				}, {});
+			const projectLabels = Object.keys(projectDurations);
+			const projectData = projectLabels.map(label => projectDurations[label]);
+			const projectColors = getDistinctColors(projectLabels.length);
 
-				const projectLabels = Object.keys(projectDurations);
-				const projectData = projectLabels.map(label => projectDurations[label]);
-				const projectColors = getDistinctColors(projectLabels.length);
+			// 2. Prepare Data for Daily Bar Chart
+			const dailyDurations = {};
+			const now = new Date();
+			now.setHours(0, 0, 0, 0);
+			const oneDayMs = 24 * 60 * 60 * 1000;
 
-				// 2. Prepare Data for Daily Bar Chart
-				const dailyDurations = {};
-				const now = new Date();
-				now.setHours(0, 0, 0, 0);
-				const oneDayMs = 24 * 60 * 60 * 1000;
+			const lastSevenDaysLabels = [];
+			for (let i = 6; i >= 0; i--) {
+				const day = new Date(now.getTime() - i * oneDayMs);
+				const dateKey = day.toISOString().split('T')[0];
+				lastSevenDaysLabels.push(day.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' }));
+				dailyDurations[dateKey] = 0;
+			}
 
-				// Initialize last 7 days (including today)
-				const lastSevenDaysLabels = [];
-				for (let i = 6; i >= 0; i--) {
-					const day = new Date(now.getTime() - i * oneDayMs);
-					const dateKey = day.toISOString().split('T')[0];
-					lastSevenDaysLabels.push(day.toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' }));
-					dailyDurations[dateKey] = 0;
-				}
-
-				// Aggregate data for the last 7 days
-				allEntries.forEach(entry => {
-					if (entry.endTime) {
-						const dateKey = entry.endTime.toDate().toISOString().split('T')[0];
-						if (dailyDurations.hasOwnProperty(dateKey)) {
-							dailyDurations[dateKey] += entry.totalDurationMs;
-						}
+			allEntries.forEach(entry => {
+				if (entry.endTime) {
+					const dateKey = (new Date(entry.endTime)).toISOString().split('T')[0];
+					if (dailyDurations.hasOwnProperty(dateKey)) {
+						dailyDurations[dateKey] += entry.totalDurationMs;
 					}
-				});
+				}
+			});
 
-				const dailyDataMs = Object.values(dailyDurations).slice(-7); // Ensure we only take 7 days, in order
-				const dailyDataHours = dailyDataMs.map(ms => ms / 3600000); // Convert milliseconds to hours
+			const dailyDataMs = Object.values(dailyDurations).slice(-7);
+			const dailyDataHours = dailyDataMs.map(ms => ms / 3600000);
 
-				reportsLoading.classList.add('hidden');
-				reportsContent.classList.remove('hidden');
+			reportsLoading.classList.add('hidden');
+			reportsContent.classList.remove('hidden');
 
-				// --- Generate Project Pie Chart ---
-				const pieCtx = document.getElementById('project-pie-chart').getContext('2d');
-				const pieChart = new Chart(pieCtx, {
-					type: 'doughnut',
-					data: {
-						labels: projectLabels,
-						datasets: [{
-							data: projectData,
-							backgroundColor: projectColors,
-							hoverOffset: 4
-						}]
-					},
-					options: {
-						responsive: true,
-						maintainAspectRatio: false,
-						plugins: {
-							legend: { position: 'right' },
-							tooltip: {
-								callbacks: {
-									label: (context) => {
-										const totalSeconds = Math.round(context.parsed / 1000);
-										return `${context.label}: ${formatDuration(totalSeconds)}`;
-									}
+			// --- Generate Project Pie Chart ---
+			const pieCtx = document.getElementById('project-pie-chart').getContext('2d');
+			const pieChart = new Chart(pieCtx, {
+				type: 'doughnut',
+				data: {
+					labels: projectLabels,
+					datasets: [{
+						data: projectData,
+						backgroundColor: projectColors,
+						hoverOffset: 4
+					}]
+				},
+				options: {
+					responsive: true,
+					maintainAspectRatio: false,
+					plugins: {
+						legend: { position: 'right' },
+						tooltip: {
+							callbacks: {
+								label: (context) => {
+									const totalSeconds = Math.round(context.parsed / 1000);
+									return `${context.label}: ${formatDuration(totalSeconds)}`;
 								}
 							}
 						}
 					}
-				});
-				activeChartInstances.push(pieChart);
+				}
+			});
+			activeChartInstances.push(pieChart);
 
 
-				// --- Generate Daily Bar Chart ---
-				const barCtx = document.getElementById('daily-bar-chart').getContext('2d');
-				const barChart = new Chart(barCtx, {
-					type: 'bar',
-					data: {
-						labels: lastSevenDaysLabels,
-						datasets: [{
-							label: 'Hours Logged',
-							data: dailyDataHours,
-							backgroundColor: '#4f46e5',
-							borderRadius: 4
-						}]
+			// --- Generate Daily Bar Chart ---
+			const barCtx = document.getElementById('daily-bar-chart').getContext('2d');
+			const barChart = new Chart(barCtx, {
+				type: 'bar',
+				data: {
+					labels: lastSevenDaysLabels,
+					datasets: [{
+						label: 'Hours Logged',
+						data: dailyDataHours,
+						backgroundColor: '#4f46e5',
+						borderRadius: 4
+					}]
+				},
+				options: {
+					responsive: true,
+					maintainAspectRatio: false,
+					scales: {
+						y: {
+							beginAtZero: true,
+							title: { display: true, text: 'Hours' }
+						}
 					},
-					options: {
-						responsive: true,
-						maintainAspectRatio: false,
-						scales: {
-							y: {
-								beginAtZero: true,
-								title: { display: true, text: 'Hours' }
-							}
-						},
-						plugins: {
-							legend: { display: false },
-							tooltip: {
-								callbacks: {
-									label: (context) => {
-										const hours = context.parsed.y.toFixed(2);
-										return `Total: ${hours} hours`;
-									}
+					plugins: {
+						legend: { display: false },
+						tooltip: {
+							callbacks: {
+								label: (context) => {
+									const hours = context.parsed.y.toFixed(2);
+									return `Total: ${hours} hours`;
 								}
 							}
 						}
 					}
-				});
-				activeChartInstances.push(barChart);
-
-
-			} catch (e) {
-				console.error("Error generating reports:", e);
-				reportsLoading.classList.add('hidden');
-				reportsError.classList.remove('hidden');
-			}
-		};
-
-		// --- Initialization and Authentication ---
-
-		const initFirebase = async () => {
-			try {
-				const app = initializeApp(firebaseConfig);
-				db = getFirestore(app);
-				auth = getAuth(app);
-
-				if (initialAuthToken) {
-					await signInWithCustomToken(auth, initialAuthToken);
-				} else {
-					await signInAnonymously(auth);
 				}
-
-				onAuthStateChanged(auth, (user) => {
-					if (user) {
-						userId = user.uid;
-						userIdDisplay.textContent = `User ID: ${userId}`;
-						startButton.addEventListener('click', startNewTimer);
-						exportButton.addEventListener('click', exportData);
-						loadActiveTimers();
-						fetchRecentActivities();
-					} else {
-						userIdDisplay.textContent = 'User ID: Signed out';
-						userId = null;
-						startButton.disabled = true;
-						exportButton.disabled = true;
-					}
-				});
-
-			} catch (error) {
-				console.error("Error initializing Firebase:", error);
-			}
+			});
+			activeChartInstances.push(barChart);
 		};
 
-		initFirebase();
+		// --- Initialization ---
+		const initializeApp = async () => {
+			userIdDisplay.textContent = "Status: Local Mode";
+			startButton.addEventListener('click', startNewTimer);
+			exportButton.addEventListener('click', exportData);
+
+			await loadDataFromServer(); // Load initial data
+
+			loadActiveTimers(); // Load running timers from localStorage
+			fetchRecentActivities(); // Populate suggestions
+		};
+
+		initializeApp();
 	</script>
 </body>
 

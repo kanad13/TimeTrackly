@@ -1,42 +1,44 @@
-# Deployment Guide (Firebase Hosting)
+# Local Setup and Execution Guide
 
-- This guide details how to securely deploy the Multi-Task Time Tracker (MTTT) using Firebase Hosting and ensure the connection to your Firestore database
+The Multi-Task Time Tracker (MTTT)  runs as a local application on your machine using Node.js. This ensures your data remains private and provides a consistent experience across all browsers.
 
 ## 1. Prerequisites
 
-- A Google Account (required for Firebase)
-- Node.js and npm installed on your system
-- Firebase Project: You must have an active Firebase project ready
+- **Node.js:** You must have Node.js installed on your system. You can download it from [nodejs.org](https://nodejs.org/).
 
-## 2. Install and Log In to Firebase CLI
+## 2. First-Time Setup
 
-- Open your terminal or command prompt and run the following commands:
-- **Install the Firebase CLI:**
-  - `npm install -g firebase-tools`
-- **Log in to Firebase:**
-  - `firebase login`
-  - This will open a browser window to authenticate your Google account
+1.  **Open Terminal:** Navigate to the project directory (`mttt-tracker`) in your terminal or command prompt.
+2.  **Install Dependencies:** Run the following command. (Note: This project has no external dependencies, but this is a standard step).
+    `npm install`
 
-## 3. Prepare Your Local Project
+## 3. Running the Application
 
-- **Create a Project Folder:**
-  - `mkdir mttt-tracker`
-  - `cd mttt-tracker`
-- **Save the Code:** Place the `index.html` file (from this repository) directly inside the `mttt-tracker` folder
-- **Initialize Firebase:**
-  - `firebase init`
-  - Follow the prompts:
-    - Which features do you want to set up? Select Hosting
-    - Please select an option: Choose "Use an existing project" and select your project from the list
-    - What do you want to use as your public directory? Type `.` (a single dot)
-      - This tells Firebase to serve files from the current directory
-    - Configure as a single-page app (rewrite all urls to `/index.html`)? Type N (No)
-    - Set up automatic builds and deploys with GitHub? (Optional, but recommended for advanced use)
+There are two ways to run the server:
 
-## 4. Deploy the Application
+### A) Standard Mode (Recommended for general use)
 
-- Once initialization is complete and your `index.html` is in the root directory, you can deploy the app:
-  - `firebase deploy --only hosting`
-- **Success:**
-  - Firebase will provide you with a Hosting URL (e.g., `https://[your-project-id].web.app`)
-- **Security Note:** Your application is now served securely over HTTPS and is automatically connected to your Firebase project, allowing it to use the environment-provided credentials (`**app_id`, `**firebase_config`, etc.) for Firestore access
+1.  **Start the Server:** In your terminal, run:
+    `npm start`
+2.  **Access the App:** Open your web browser and navigate to `http://localhost:3000`.
+3.  To stop the server, go back to the terminal and press `Ctrl + C`.
+
+### B) Background Mode with PM2 (For continuous use)
+
+PM2 is a process manager for Node.js that will keep your server running in the background. This is a "fire-and-forget" solution.
+
+1.  **Install PM2 (One-time only):**
+    `npm install pm2 -g`
+
+2.  **Start the Server with PM2:** In the project directory, run:
+    `pm2 start server.js --name "mttt-tracker"`
+
+3.  **Manage the Process:**
+
+    - **View Status:** `pm2 list`
+    - **Stop the Server:** `pm2 stop mttt-tracker`
+    - **Restart the Server:** `pm2 restart mttt-tracker`
+    - **View Logs:** `pm2 logs mttt-tracker`
+
+4.  **Save the Process:** To make PM2 automatically restart the server after a system reboot, run:
+    `pm2 save`

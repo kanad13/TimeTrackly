@@ -1,0 +1,18 @@
+[
+	{
+		"project": "Initial Setup",
+		"task": "Reviewing Template Data",
+		"totalDurationMs": 75123,
+		"durationSeconds": 75,
+		"endTime": "2025-10-31T10:00:00.000Z",
+		"createdAt": "2025-10-31T09:58:45.000Z"
+	},
+	{
+		"project": "Client Demo",
+		"task": "Preparing Presentation Slides",
+		"totalDurationMs": 1823456,
+		"durationSeconds": 1823,
+		"endTime": "2025-10-30T15:30:00.000Z",
+		"createdAt": "2025-10-30T15:00:00.000Z"
+	}
+]
