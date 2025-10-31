@@ -5,6 +5,47 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Multi-Task Time Tracker</title>
+
+	<!--
+		MTTT - Multi-Task Time Tracker
+		================================
+
+		ARCHITECTURE OVERVIEW:
+		This is a single-page application (SPA) for local time tracking. It operates
+		entirely in the browser with a local Node.js server providing data persistence.
+
+		DESIGN PHILOSOPHY - Single-User, Local-First:
+		- No authentication or user accounts
+		- All data stored locally in JSON files
+		- Complete privacy (no external network requests except CDNs)
+		- Survives browser/system restarts via server-side state persistence
+
+		MODULAR STRUCTURE:
+		The application uses ES6 modules for clean separation of concerns:
+		- app.js: Main orchestrator, initializes everything
+		- state.js: Centralized state management
+		- api.js: Server communication layer
+		- ui.js: DOM manipulation and user interactions
+		- reports.js: Chart generation and analytics
+		- utils.js: Shared utility functions
+		- constants.js: Configuration values
+
+		EXTERNAL DEPENDENCIES (CDN):
+		- Tailwind CSS: Utility-first CSS framework for styling
+		- Chart.js: Canvas-based charts for reports
+		- Google Fonts (Inter): Typography
+
+		IMPACT OF CHANGES:
+		- Changing script type from "module" will break ES6 imports
+		- Removing/changing CDN URLs will break styling or charts
+		- DOM element IDs are referenced in ui.js - changing them breaks functionality
+
+		MAINTAINABILITY:
+		- Keep this HTML minimal - business logic belongs in JS modules
+		- New features should add modules, not inline scripts
+		- DOM structure changes require corresponding updates in ui.js
+	-->
+
 	<!-- Load Tailwind CSS -->
 	<script src="https://cdn.tailwindcss.com"></script>
 	<!-- Load Chart.js for Visualization -->
@@ -116,7 +157,20 @@
 		<p class="text-sm text-center text-gray-400 mt-6" id="user-id-display">User ID: Loading...</p>
 	</div>
 
-	<!-- Modular Application Logic -->
+	<!--
+		ES6 Module Entry Point
+		======================
+		CRITICAL: type="module" enables ES6 import/export syntax.
+
+		Loading app.js kicks off the entire application:
+		1. Loads all other modules via imports
+		2. Fetches data from server
+		3. Initializes UI
+		4. Sets up event listeners
+
+		IMPACT: Removing type="module" or changing src path breaks the entire app.
+		The server must serve this with proper MIME type (application/javascript).
+	-->
 	<script type="module" src="js/app.js"></script>
 </body>
 

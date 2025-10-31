@@ -1,5 +1,48 @@
 /**
  * Chart rendering and reports generation
+ *
+ * ROLE IN ARCHITECTURE:
+ * Handles all data visualization using Chart.js. Transforms raw time entries
+ * into meaningful charts for productivity insights.
+ *
+ * CHARTS PROVIDED:
+ * 1. Project Time Distribution (Doughnut): Shows % of time per project
+ * 2. Daily Time Logged (Bar): Shows hours logged each day for last 7 days
+ *
+ * DATA PROCESSING APPROACH:
+ * - All calculations happen client-side (no server processing needed)
+ * - Historical entries are aggregated into chart-ready format
+ * - Projects are color-coded consistently using deterministic algorithm
+ *
+ * CHART LIFECYCLE:
+ * 1. User switches to Reports tab
+ * 2. renderReportsView() called
+ * 3. Destroy any existing chart instances (CRITICAL - prevents memory leaks)
+ * 4. Process historical data into chart format
+ * 5. Create new Chart.js instances
+ * 6. Store references for next cleanup
+ *
+ * WHY CHART DESTRUCTION MATTERS:
+ * Chart.js creates canvas contexts and event listeners. Without destroying
+ * old charts before creating new ones, memory usage grows with each tab switch.
+ * This would eventually slow down or crash the browser.
+ *
+ * COLOR CONSISTENCY:
+ * Projects are sorted alphabetically, then assigned colors in order.
+ * Same project always gets same color across sessions (deterministic).
+ * This helps users quickly identify projects by color.
+ *
+ * SINGLE-USER CONTEXT:
+ * - No real-time updates needed (user manually switches to Reports tab)
+ * - No server-side aggregation (client has all data already)
+ * - No pagination needed (personal use = manageable data volumes)
+ *
+ * IMPACT OF CHANGES:
+ * - Skipping chart destruction causes memory leaks
+ * - Changing aggregation logic affects what users see in reports
+ * - Modifying colors affects user's learned associations
+ * - Changing REPORT_DAYS_DEFAULT in constants affects bar chart
+ *
  * @module reports
  */
 
@@ -35,7 +78,10 @@ export const renderReportsView = () => {
 	reportsContent.classList.add("hidden");
 	reportsError.classList.add("hidden");
 
-	// Destroy existing chart instances
+	// CRITICAL: Destroy existing chart instances before creating new ones
+	// Without this, memory leaks occur as Chart.js canvases and event listeners accumulate
+	// Each chart instance holds references to canvas contexts which aren't garbage collected
+	// Impact: Skipping this causes browser slowdown after many tab switches
 	state.activeChartInstances.forEach((chart) => chart.destroy());
 	state.activeChartInstances = [];
 

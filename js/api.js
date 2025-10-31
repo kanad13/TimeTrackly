@@ -1,5 +1,46 @@
 /**
  * API communication layer for server interactions
+ *
+ * ROLE IN ARCHITECTURE:
+ * This module is the ONLY place where fetch() calls to the server occur.
+ * It abstracts all server communication and provides a clean interface for
+ * other modules to load/save data without knowing HTTP details.
+ *
+ * ERROR HANDLING STRATEGY:
+ *
+ * Fatal Errors (throw + stop app):
+ * - loadDataFromServer(): Can't proceed without historical data
+ *   Shows error UI, prevents further initialization
+ *
+ * Recoverable Errors (notify + continue):
+ * - loadActiveStateFromServer(): Can start fresh without saved timers
+ * - loadSuggestionsFromServer(): Can work with empty suggestions
+ * - saveDataToServer(): Notifies user, but app continues functioning
+ * - saveActiveStateToServer(): Notifies user, warns about data loss risk
+ *
+ * WHY THESE DECISIONS:
+ * - Historical data is core to the app's purpose - can't work without it
+ * - Active state and suggestions are nice-to-have - can recover
+ * - Save failures are critical to notify about, but shouldn't crash app
+ *
+ * SYNCHRONIZATION APPROACH:
+ * This is NOT real-time sync. It's event-driven:
+ * - Every timer start/pause/stop triggers a save
+ * - Server is source of truth; browser state is cache
+ * - No polling or websockets needed (single user, local server)
+ *
+ * SINGLE-USER CONTEXT:
+ * No need for:
+ * - Optimistic updates with rollback (no concurrent users to conflict)
+ * - Request queuing (one user can't create overwhelming request volume)
+ * - Complex retry logic (local server is always available)
+ *
+ * IMPACT OF CHANGES:
+ * - Changing fetch URLs breaks all server communication
+ * - Removing error handlers causes silent failures
+ * - Changing error handling strategy (fatal vs recoverable) affects UX
+ * - Not awaiting saves can cause data loss on quick actions
+ *
  * @module api
  */
 

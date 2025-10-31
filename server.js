@@ -1,4 +1,42 @@
-// server.js
+/**
+ * MTTT Local Server - Multi-Task Time Tracker Backend
+ *
+ * ARCHITECTURE OVERVIEW:
+ * This is a simple, local-only Node.js HTTP server designed for single-user operation.
+ * It serves as the data persistence layer for the time tracking application, handling
+ * all file I/O operations for JSON-based data storage.
+ *
+ * DESIGN PHILOSOPHY - Single-User, Local-First:
+ * - NO authentication or user management (single-user system)
+ * - NO database (direct JSON file I/O)
+ * - NO external dependencies (uses only Node.js built-ins)
+ * - Simple file locking (no distributed locks needed)
+ * - Local-only binding (127.0.0.1 for security)
+ *
+ * KEY RESPONSIBILITIES:
+ * 1. Serve static frontend files (index.html, JS modules)
+ * 2. Manage three JSON data files:
+ *    - mtt-data.json: Historical time entries (append-only in practice)
+ *    - mtt-active-state.json: Currently running timers (frequent updates)
+ *    - mtt-suggestions.json: User-editable task suggestions
+ * 3. Ensure data integrity via atomic writes
+ * 4. Provide health monitoring endpoint
+ *
+ * CRITICAL DESIGN DECISIONS:
+ * - Atomic writes: Use temp file + rename to prevent corruption on crashes
+ * - File locking: Prevent concurrent writes (rare with single user, but possible)
+ * - Request validation: Limit payload size to prevent accidental data issues
+ * - Structured logging: JSON format for easy parsing and debugging
+ *
+ * MAINTAINABILITY NOTES:
+ * - All file operations use async/await for clarity
+ * - Error handling provides specific context for debugging
+ * - Environment variables allow configuration without code changes
+ * - Health endpoint enables quick diagnostics
+ *
+ * @module server
+ */
+
 const http = require("http");
 const fs = require("fs").promises;
 const fsSync = require("fs");
@@ -71,9 +109,32 @@ const releaseLock = async () => {
 
 // --- Atomic File Write Utility ---
 /**
- * Writes data to a file atomically using temp file + rename
+ * Writes data to a file atomically using temp file + rename pattern.
+ *
+ * WHY ATOMIC WRITES MATTER:
+ * Without atomic writes, if the process crashes during file.writeFile(), the file
+ * can be left in a partially written state (corrupted). This is catastrophic for
+ * JSON files which must be perfectly formatted to parse correctly.
+ *
+ * HOW IT WORKS:
+ * 1. Write data to a temporary file (filename.tmp)
+ * 2. If successful, rename temp file to target filename
+ * 3. The rename operation is atomic at the OS level
+ *
+ * Result: Either the old file exists (if crash before rename) or the new file
+ * exists (if crash after rename). Never a partially-written file.
+ *
+ * SINGLE-USER CONTEXT:
+ * File locking prevents concurrent writes. While rare with single user, it's
+ * possible if user manually triggers multiple saves rapidly, or if a server
+ * restart occurs during a save operation.
+ *
+ * IMPACT: If you remove atomic writes, data corruption becomes likely during
+ * system crashes, power failures, or forced shutdowns.
+ *
  * @param {string} filePath - Target file path
  * @param {string} data - Data to write
+ * @throws {Error} If write operation fails
  */
 const writeFileAtomic = async (filePath, data) => {
 	const tempPath = `${filePath}.tmp`;
@@ -99,10 +160,28 @@ const writeFileAtomic = async (filePath, data) => {
 
 // --- Request Validation Utility ---
 /**
- * Validates and parses JSON body from request
+ * Validates and parses JSON body from request with size limits.
+ *
+ * WHY VALIDATION MATTERS:
+ * Even in a single-user, local context, validation prevents:
+ * 1. Accidental corruption from malformed requests
+ * 2. Resource exhaustion from accidentally large payloads
+ * 3. Clear error messages for debugging
+ *
+ * PAYLOAD SIZE LIMIT (1MB):
+ * - Typical active state: ~1-10KB for dozens of timers
+ * - Typical historical data: ~100KB for thousands of entries
+ * - 1MB limit provides 10-100x safety margin
+ * - Prevents accidental infinite loops or bugs from filling disk
+ *
+ * SINGLE-USER CONTEXT:
+ * This isn't protection against malicious users (there are none), but against
+ * bugs in the frontend code or accidental data issues.
+ *
  * @param {http.IncomingMessage} req - Request object
  * @param {number} maxSize - Maximum payload size in bytes
  * @returns {Promise<any>} Parsed JSON object
+ * @throws {Error} If payload too large, invalid JSON, or request error
  */
 const validateJsonBody = (req, maxSize = MAX_PAYLOAD_SIZE) => {
 	return new Promise((resolve, reject) => {

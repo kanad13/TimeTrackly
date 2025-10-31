@@ -1,5 +1,41 @@
 /**
  * Main application initialization and orchestration
+ *
+ * ROLE IN ARCHITECTURE:
+ * This is the entry point for the entire frontend application. It orchestrates
+ * the initialization sequence and sets up application lifecycle handlers.
+ *
+ * INITIALIZATION ORDER (CRITICAL):
+ * The order of operations in initializeApp() matters:
+ * 1. Initialize DOM element references FIRST (ui.js needs these)
+ * 2. Load server data (suggestions, historical, active state)
+ * 3. Render UI with loaded data
+ * 4. Start timer display if needed
+ *
+ * WHY THIS ORDER:
+ * - DOM elements must exist before any UI operations
+ * - Data must load before rendering (or UI shows stale/empty state)
+ * - Timer display only starts if there are running timers
+ *
+ * LIFECYCLE HANDLERS:
+ * - visibilitychange: Pauses timer updates when tab hidden (saves CPU)
+ * - beforeunload: Warns user about active timers, cleans up intervals
+ * - error/unhandledrejection: Catches and logs unexpected errors
+ *
+ * SINGLE-USER CONTEXT:
+ * No need for authentication, sessions, or multi-user coordination.
+ * The "user" is whoever is using the browser on this machine.
+ *
+ * ERROR HANDLING STRATEGY:
+ * - Fatal errors (can't load data): Show error message, stop initialization
+ * - Non-fatal errors (can't restore session): Show notification, continue with fresh state
+ * - Global errors: Log and notify user, but don't crash the app
+ *
+ * IMPACT OF CHANGES:
+ * - Changing initialization order can cause undefined reference errors
+ * - Removing lifecycle handlers causes memory leaks and poor UX
+ * - Not awaiting data loads causes race conditions
+ *
  * @module app
  */
 

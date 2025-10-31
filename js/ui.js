@@ -1,5 +1,52 @@
 /**
  * UI rendering and timer control functions
+ *
+ * ROLE IN ARCHITECTURE:
+ * This is the largest module, handling all DOM manipulation and user interactions.
+ * It's the "controller" in the MVC pattern - responding to user actions and updating the view.
+ *
+ * RESPONSIBILITIES:
+ * 1. DOM element manipulation (reading inputs, rendering timers)
+ * 2. Timer lifecycle management (start, pause, resume, stop, delete)
+ * 3. User input validation and sanitization
+ * 4. CSV export generation
+ * 5. Real-time timer display updates
+ *
+ * UI UPDATE FLOW:
+ * User Action → Handler Function → Update State → Save to Server → Re-render UI
+ *
+ * Example: User clicks "Stop"
+ * 1. stopTimer(id) called
+ * 2. Calculate final duration, remove from activeTimers
+ * 3. Add to historicalEntries
+ * 4. await saveActiveStateToServer() + saveDataToServer()
+ * 5. renderActiveTimers() updates DOM
+ * 6. populateSuggestions() adds task to dropdown
+ *
+ * TIMER LIFECYCLE:
+ * Created → Running ⇄ Paused → Stopped (saved) or Deleted (discarded)
+ *
+ * DUPLICATE DETECTION:
+ * Uses lowercase "project:task" keys to prevent duplicate timers.
+ * Example: "Project A / Task 1" and "project a / task 1" are considered duplicates.
+ * This prevents confusion and ensures data consistency.
+ *
+ * CSV EXPORT FORMAT:
+ * Includes computed durationMinutes for Excel/Sheets compatibility.
+ * Double-quotes are escaped to prevent CSV injection.
+ * Filename includes ISO date for easy organization.
+ *
+ * SINGLE-USER CONTEXT:
+ * - No optimistic UI updates (server save is fast, blocking is acceptable)
+ * - No undo/redo (user can manually recreate if needed)
+ * - No conflict resolution (no concurrent edits possible)
+ *
+ * IMPACT OF CHANGES:
+ * - Changing DOM element IDs requires updates here
+ * - Modifying state structure requires changes to renderActiveTimers()
+ * - Changing save flow order can cause race conditions
+ * - Not awaiting saves can cause data loss
+ *
  * @module ui
  */
 
@@ -205,6 +252,17 @@ export const renderActiveTimers = () => {
 
 /**
  * Updates the display of all timer durations
+ *
+ * CALLED BY: setInterval every 1 second (see startTimerDisplay)
+ *
+ * WHY: Running timers need to show incrementing time in real-time.
+ * Without this, the display would freeze at the start time.
+ *
+ * OPTIMIZATION: Paused timers don't change, but updating all is simpler
+ * than tracking which ones need updates. With single-user constraints,
+ * there won't be enough timers for this to cause performance issues.
+ *
+ * AUTO-CLEANUP: If no timers are running, stops the interval to save CPU.
  */
 export const updateTimerDisplay = () => {
 	for (const id in state.activeTimers) {
@@ -255,6 +313,10 @@ export const startNewTimer = async () => {
 	const task = parts[1] || "Task";
 	const taskKey = getRunningTasksKey(project, task);
 
+	// DUPLICATE DETECTION:
+	// Prevents multiple timers for the same project/task combination.
+	// Uses case-insensitive comparison to avoid "Project / Task" and "project / task" both running.
+	// This is a UX decision - having duplicates would make reports confusing.
 	if (
 		Object.values(state.activeTimers).some(
 			(t) => getRunningTasksKey(t.project, t.task) === taskKey

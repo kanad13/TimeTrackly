@@ -1,84 +1,101 @@
 # Local Setup and Execution Guide
 
-The Multi-Task Time Tracker (MTTT) runs as a local application on your machine using Node.js. The application features a modular architecture with robust error handling to ensure your data remains private and provides a consistent experience across all browsers.
+- The **Multi-Task Time Tracker (MTTT)** runs as a local application on your machine using Node.js
+- The application features a modular architecture with robust error handling to ensure your data remains private and provides a consistent experience across all browsers
 
 ## 1. Prerequisites
 
-- **Node.js:** You must have Node.js installed on your system (v13 or higher recommended). You can download it from [nodejs.org](https://nodejs.org/).
+- **Node.js:** You must have Node.js installed on your system (v13 or higher recommended)
+  - You can download it from [nodejs.org](https://nodejs.org/)
 
 ## 2. First-Time Setup
 
-1.  **Open Terminal:** Navigate to the project directory (`mttt-tracker`) in your terminal or command prompt.
-2.  **Install Dependencies:** Run the following command. (Note: This project has no external dependencies, but this is a standard step).
-    `npm install`
+- **Open Terminal:** Navigate to the project directory (`mttt-tracker`) in your terminal or command prompt
+- **Install Dependencies:** Run the following command
+  - Note: This project has no external dependencies, but this is a standard step
 
-    Upon first startup, the server will automatically create the necessary data files if they don't exist: `mtt-data.json`, `mtt-active-state.json`, and `mtt-suggestions.json`.
+```bash
+npm install
+```
+
+- Upon first startup, the server will automatically create the necessary data files if they don't exist: `mtt-data.json`, `mtt-active-state.json`, and `mtt-suggestions.json`
 
 ## 3. Running the Application
 
-There are multiple ways to run the server:
+- There are multiple ways to run the server:
 
-### A) Standard Mode (Recommended for general use)
+### 3.1. Standard Mode (Recommended for general use)
 
-1.  **Start the Server:** In your terminal, run:
-    `npm start`
-2.  **Access the App:** Open your web browser and navigate to `http://localhost:13331`.
-3.  To stop the server, go back to the terminal and press `Ctrl + C`.
+- **Start the Server:** In your terminal, run:
 
-### B) Development Mode (With detailed logging)
+```bash
+npm start
+```
 
-1.  **Start in Dev Mode:** In your terminal, run:
-    `npm run dev`
-2.  This mode provides more verbose logging to help debug issues.
+- **Access the App:** Open your web browser and navigate to `http://localhost:13331`
+- **Stop the Server:** Go back to the terminal and press `Ctrl + C`
 
-### C) Background Mode with PM2 (For continuous use)
+### 3.2. Development Mode (With detailed logging)
 
-PM2 is a process manager for Node.js that will keep your server running in the background. This is a "fire-and-forget" solution.
+- **Start in Dev Mode:** In your terminal, run:
 
-1.  **Install PM2 (One-time only):**
-    `npm install pm2 -g`
+```bash
+npm run dev
+```
 
-2.  **Start the Server with PM2:** In the project directory, run:
-    `pm2 start server.js --name "mttt-tracker"`
+- This mode provides more verbose logging to help debug issues
 
-3.  **Manage the Process:**
+### 3.3. Background Mode with PM2 (For continuous use)
 
-    - **View Status:** `pm2 list`
-    - **Stop the Server:** `pm2 stop mttt-tracker`
-    - **Restart the Server:** `pm2 restart mttt-tracker`
-    - **View Logs:** `pm2 logs mttt-tracker`
-
-4.  **Save the Process:** To make PM2 automatically restart the server after a system reboot, run:
-    `pm2 save`
+- **PM2** is a process manager for Node.js that will keep your server running in the background
+- This is a "fire-and-forget" solution
+- **Install PM2 (One-time only):**
+  ```bash
+  npm install pm2 -g
+  ```
+- **Start the Server with PM2:** In the project directory, run:
+  ```bash
+  pm2 start server.js --name "mttt-tracker"
+  ```
+- **Manage the Process:**
+  - **View Status:** `pm2 list`
+  - **Stop the Server:** `pm2 stop mttt-tracker`
+  - **Restart the Server:** `pm2 restart mttt-tracker`
+  - **View Logs:** `pm2 logs mttt-tracker`
+- **Save the Process:** To make `PM2` automatically restart the server after a system reboot, run:
+  ```bash
+  pm2 save
+  ```
 
 ## 4. Health Check and Monitoring
 
-The server includes a health endpoint to verify the application is running correctly:
-
-**Check Server Health:**
-
-```bash
-npm run health
-```
-
-This will display the server status, uptime, and confirm all data files are accessible.
+- The server includes a health endpoint to verify the application is running correctly
+- **Check Server Health:**
+  ```bash
+  npm run health
+  ```
+- This will display the server status, uptime, and confirm all data files are accessible
 
 ## 5. Backup Your Data
 
-You can create manual backups of your time tracking data:
-
-**Create Backup:**
+- You can create manual backups of your time tracking data
+- **Create Backup:**
 
 ```bash
 npm run backup
 ```
 
-This copies all `mtt-*.json` files to a timestamped backup directory. However, since you're using Git, regular commits provide automatic versioning of your data files.
+- This copies all `mtt-*.json` files to a timestamped backup directory
+- However, since you're using Git, regular commits provide automatic versioning of your data files
 
 ## 6. Customizing Your Suggestions
 
-You can easily edit your list of default "Project / Task" suggestions.
-
-1.  **Open the File:** In the project's root directory, open the `mtt-suggestions.json` file with any text editor.
-2.  **Edit the Contents:** Add, remove, or modify the string entries in the JSON array. Make sure to maintain the correct JSON format.
-3.  **Save and Refresh:** Save the file and simply refresh your browser window. The new suggestions will appear in the input dropdown. No server restart is required.
+- You can easily edit your list of default "Project / Task" suggestions
+- **Open the File:** In the project's root directory, open the `mtt-suggestions.json` file with any text editor
+- **Edit the Contents:**
+  - Add, remove, or modify the string entries in the JSON array
+  - Make sure to maintain the correct JSON format
+- **Save and Refresh:**
+  - Save the file and simply refresh your browser window
+  - The new suggestions will appear in the input dropdown
+  - No server restart is required
