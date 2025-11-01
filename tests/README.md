@@ -366,8 +366,6 @@ async function testResponsive(page) {
 
 ## Additional Resources
 
-- **IMPLEMENTATION-COMPLETE.md** - Full implementation details
-- **UNIT-TESTS-ISSUE.md** - Known issue with unit tests
-- Test files: `tests/e2e/test-backend-api.js`, `tests/e2e/test-ui-complete.js`
+- Test files: `tests/e2e/test-backend-api.cjs`, `tests/e2e/test-ui-complete.cjs`
 - [Puppeteer Documentation](https://pptr.dev/)
 - [Node.js Test Runner](https://nodejs.org/api/test.html)

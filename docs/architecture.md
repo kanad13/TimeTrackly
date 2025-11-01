@@ -129,10 +129,7 @@
     - When resumed, `startTime` is set back to `Date.now()`
     - The state is saved to the server on each toggle
   - **UX:** Paused timers receive a visual indicator (`orange border`) and their buttons switch to `Resume`
-
-- ![](/assets/020-ui_timer_with_notes.png)
-  _Active timers display real-time duration and control buttons_
-  _Paused timers show orange border and resume option_
+  - Active timers display real-time duration and control buttons while paused timers show an orange border and resume option
 
 - **Delete (Discard):** Allows users to remove accidental or incomplete timers from the active list without generating a permanent record
   - This action also syncs with the server

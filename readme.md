@@ -105,8 +105,8 @@ The application runs locally using a simple Node.js server with zero external de
 
 ```bash
 # Clone the repository
-git clone https://github.com/kanad13/time-tracker.git
-cd time-tracker
+git clone https://github.com/kanad13/TimeTrackly.git
+cd TimeTrackly
 
 # Start the server
 npm start
