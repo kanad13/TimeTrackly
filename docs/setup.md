@@ -108,47 +108,22 @@ npm run backup
 
 ## 7. Verify Your Installation
 
-After setting up, you can verify everything works correctly by running the test suite:
-
-### 7.1. Run All Tests
+After setup, verify the application works:
 
 ```bash
-# Make sure the server is running first
-npm start
+# With the server running, check the health endpoint
+npm run health
+```
 
-# In another terminal, run all tests
+You should see a response showing status "ok" and all data files accessible.
+
+Optionally, run the test suite:
+
+```bash
 npm test
 ```
 
-You should see output showing 166 tests passing:
-- 131 frontend unit tests
-- 23 backend API tests
-- 12 E2E UI tests
-
-### 7.2. Run Specific Test Suites
-
-```bash
-npm run test:unit     # Frontend unit tests only (fastest, ~2 seconds)
-npm run test:api      # Backend API tests only
-npm run test:e2e      # E2E UI tests (opens browser, takes ~30 seconds)
-npm run test:headless # E2E in headless mode (for CI environments)
-npm run test:watch    # Unit tests in watch mode (auto-reruns on file changes)
-```
-
-### 7.3. What Tests Verify
-
-- ✅ State management and timer calculations work correctly
-- ✅ All utility functions (formatting, validation, UUID generation)
-- ✅ UI operations (start, pause, resume, stop, delete timers)
-- ✅ Data persistence (timers survive page reloads)
-- ✅ Backend API endpoints respond correctly
-- ✅ Error handling and edge cases
-- ✅ CSV export functionality
-- ✅ Reports and analytics charts
-
-If all tests pass, your installation is working perfectly!
-
-See `tests/README.md` for detailed testing guidance and how to write new tests.
+For detailed testing information, see `tests/README.md`.
 
 ## 8. Using the Application
 

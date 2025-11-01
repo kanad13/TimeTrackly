@@ -121,40 +121,15 @@ Your data is already being saved locally to `mtt-data.json`.
 - For detailed setup and troubleshooting, see `docs/setup.md`
 - For a deep dive into architecture, see `docs/architecture.md`
 
-## 5. Test Coverage & Reliability
+## 5. Testing
 
-We're serious about reliability. Every major path is tested:
-
-| Suite         | Tests     | Status         |
-| ------------- | --------- | -------------- |
-| Backend API   | 23/23     | ✅ All passing |
-| E2E UI        | 12/12     | ✅ All passing |
-| Frontend Unit | 131/131   | ✅ All passing |
-
-**Total: 166 tests, all passing** 🎉
-
-**Run tests locally:**
+TimeTrackly is comprehensively tested with unit tests, API tests, and end-to-end UI tests.
 
 ```bash
-npm test              # All tests (unit + API + E2E)
-npm run test:unit     # Frontend unit tests only
-npm run test:api      # Backend API only
-npm run test:e2e      # UI/UX scenarios
-npm run test:headless # E2E in headless mode (for CI)
-npm run test:watch    # Run unit tests in watch mode
+npm test  # Run all tests
 ```
 
-**What's tested:**
-- ✅ State management and timer calculations
-- ✅ Utility functions (formatting, validation, UUID generation)
-- ✅ UI operations (timer lifecycle, notes, CSV export)
-- ✅ Data aggregation for reports
-- ✅ Backend API endpoints
-- ✅ E2E user workflows (start, pause, resume, stop, delete)
-- ✅ Error handling and edge cases
-- ✅ Responsive design across viewports
-
-See `tests/README.md` for detailed testing guidance and how to write new tests.
+For detailed testing information, test coverage, and how to write tests, see [`tests/README.md`](tests/README.md).
 
 ## 6. Detailed Guidance
 
