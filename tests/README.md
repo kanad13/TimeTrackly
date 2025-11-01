@@ -19,33 +19,42 @@ npm run test:headless # E2E in headless mode (for CI)
 ```
 tests/
 ├── e2e/
-│   ├── test-backend-api.js  # Backend API tests (23 tests)
-│   └── test-ui-complete.js  # UI/UX E2E tests (12 scenarios)
-├── unit/                    # Unit tests (see UNIT-TESTS-ISSUE.md)
-├── fixtures/                # Test data samples
-└── screenshots/e2e/         # Test screenshots
+│   ├── test-backend-api.cjs  # Backend API tests (23 tests)
+│   └── test-ui-complete.cjs  # UI/UX E2E tests (12 scenarios)
+├── unit/                      # Unit tests (131 tests)
+│   ├── setup.mjs              # Test environment setup (JSDOM)
+│   ├── test-state.mjs         # State management tests (25 tests)
+│   ├── test-utils.mjs         # Utility functions tests (43 tests)
+│   ├── test-ui.mjs            # UI operations tests (24 tests)
+│   ├── test-constants.mjs     # Constants validation tests (21 tests)
+│   └── test-reports.mjs       # Data aggregation tests (18 tests)
+├── fixtures/                  # Test data samples
+└── screenshots/e2e/           # Test screenshots
 ```
 
 ## Current Test Coverage
 
-| Suite         | Tests | Status                                                    |
-| ------------- | ----- | --------------------------------------------------------- |
-| Backend API   | 23/23 | ✅ All passing                                            |
-| E2E UI        | 12/12 | ✅ All passing                                            |
-| Frontend Unit | ~68   | 🔄 In Review (unit tests temporarily disabled; see below) |
+| Suite         | Tests   | Status         |
+| ------------- | ------- | -------------- |
+| Backend API   | 23/23   | ✅ All passing |
+| E2E UI        | 12/12   | ✅ All passing |
+| Frontend Unit | 131/131 | ✅ All passing |
 
-### ⚠️ Unit Tests Status
+### ✅ Unit Tests Status
 
-**Current:** Frontend unit tests (~68) are temporarily disabled due to ES6 module and JSDOM compatibility issues. All critical user workflows are fully covered by E2E and API tests.
+**Status:** All frontend unit tests are now fully enabled and passing. The JSDOM compatibility issue has been resolved.
 
-**What's Covered:**
+**What's Tested:**
 
-- ✅ All backend API endpoints (health, suggestions, data, active-state)
-- ✅ All critical UI workflows (start, pause, resume, stop, delete, notes, export, persistence)
+- ✅ State management (calculateElapsedMs, hasRunningTimers, clearTimerInterval)
+- ✅ Utility functions (formatDuration, sanitizeInput, generateUUID, getRunningTasksKey, getDistinctColors)
+- ✅ UI operations (timer lifecycle, duplicate detection, notes persistence, CSV export)
+- ✅ Constants validation (time conversions, configuration values, chart colors)
+- ✅ Data aggregation (project/daily duration calculations for reports)
+- ✅ Backend API endpoints (health, suggestions, data, active-state)
+- ✅ E2E UI workflows (start, pause, resume, stop, delete, notes, export, persistence)
 - ✅ Error handling and validation
 - ✅ Responsive design across viewport sizes
-
-**Next Steps:** Unit test suite will be re-enabled once module compatibility is resolved. Track progress in the `docs/` folder and `package.json` scripts.
 
 ---
 
