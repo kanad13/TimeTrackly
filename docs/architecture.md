@@ -276,3 +276,57 @@ _Clear error messages guide users to correct input issues_
 ```
 
 - **Usage:** Check server health with `npm run health` or access directly at `http://localhost:13331/api/health`
+
+## 6. Testing Strategy and Quality Assurance
+
+TimeTrackly maintains comprehensive test coverage across all layers to ensure reliability and data integrity:
+
+### 6.1. Test Philosophy
+
+- **Three-Layer Testing:** Unit tests verify individual functions, API tests validate backend endpoints, and E2E tests confirm complete user workflows
+- **Local-First Testing:** All tests run locally without external dependencies, matching the application's privacy-first philosophy
+- **Automated Validation:** Tests run automatically to catch regressions before they reach users
+- **Real-World Scenarios:** E2E tests simulate actual user interactions including edge cases like page reloads and concurrent timers
+
+### 6.2. Test Coverage
+
+**Current Status: 166 tests, all passing** ✅
+
+| Test Suite    | Count   | Coverage Area                                    |
+| ------------- | ------- | ------------------------------------------------ |
+| Frontend Unit | 131/131 | State management, utils, UI, constants, reports |
+| Backend API   | 23/23   | All endpoints, validation, file operations       |
+| E2E UI        | 12/12   | Complete user workflows and persistence          |
+
+### 6.3. What's Tested
+
+- **State Management (25 tests):** Timer calculations, elapsed time tracking, pause/resume logic
+- **Utility Functions (43 tests):** Duration formatting, input sanitization, UUID generation, color assignment
+- **UI Operations (24 tests):** Timer lifecycle, duplicate detection, notes persistence, CSV export
+- **Constants Validation (21 tests):** Time conversions, configuration values, chart colors
+- **Data Aggregation (18 tests):** Project/daily duration calculations for reports
+- **Backend API (23 tests):** Health checks, CRUD operations, data validation, error handling
+- **E2E Workflows (12 tests):** Start, pause, resume, stop, delete, persistence across reloads
+- **Error Handling:** Invalid input, edge cases, concurrent operations, file system errors
+- **Responsive Design:** UI functionality across desktop, tablet, and mobile viewports
+
+### 6.4. Test Infrastructure
+
+- **Unit Tests:** Node.js built-in test runner with JSDOM for DOM simulation
+- **API Tests:** Direct HTTP requests using Node.js `fetch` API
+- **E2E Tests:** Puppeteer for browser automation with screenshot capture
+- **Test Fixtures:** Sample data files in `tests/fixtures/` for consistent test scenarios
+- **CI/CD Ready:** Headless mode support for automated testing pipelines
+
+### 6.5. Running Tests
+
+```bash
+npm test              # Run all tests (unit + API + E2E)
+npm run test:unit     # Unit tests only (fastest)
+npm run test:api      # Backend API tests only
+npm run test:e2e      # E2E UI tests only
+npm run test:headless # E2E in headless mode (for CI)
+npm run test:watch    # Unit tests in watch mode (for development)
+```
+
+See `tests/README.md` for detailed testing guidance, writing new tests, and troubleshooting.

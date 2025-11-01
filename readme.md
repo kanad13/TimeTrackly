@@ -123,26 +123,38 @@ Your data is already being saved locally to `mtt-data.json`.
 
 ## 5. Test Coverage & Reliability
 
-## 5. Test Coverage & Reliability
-
 We're serious about reliability. Every major path is tested:
 
-| Suite         | Tests | Status       |
-| ------------- | ----- | ------------ |
-| Backend API   | 23/23 | ✅ Passing   |
-| E2E UI        | 12/12 | ✅ Passing   |
-| Frontend Unit | ~68   | 🔄 In Review |
+| Suite         | Tests     | Status         |
+| ------------- | --------- | -------------- |
+| Backend API   | 23/23     | ✅ All passing |
+| E2E UI        | 12/12     | ✅ All passing |
+| Frontend Unit | 131/131   | ✅ All passing |
+
+**Total: 166 tests, all passing** 🎉
 
 **Run tests locally:**
 
 ```bash
-npm test              # All tests
+npm test              # All tests (unit + API + E2E)
+npm run test:unit     # Frontend unit tests only
 npm run test:api      # Backend API only
 npm run test:e2e      # UI/UX scenarios
-npm run test:headless # For CI/CD
+npm run test:headless # E2E in headless mode (for CI)
+npm run test:watch    # Run unit tests in watch mode
 ```
 
-See `tests/README.md` for detailed testing guidance.
+**What's tested:**
+- ✅ State management and timer calculations
+- ✅ Utility functions (formatting, validation, UUID generation)
+- ✅ UI operations (timer lifecycle, notes, CSV export)
+- ✅ Data aggregation for reports
+- ✅ Backend API endpoints
+- ✅ E2E user workflows (start, pause, resume, stop, delete)
+- ✅ Error handling and edge cases
+- ✅ Responsive design across viewports
+
+See `tests/README.md` for detailed testing guidance and how to write new tests.
 
 ## 6. Detailed Guidance
 
