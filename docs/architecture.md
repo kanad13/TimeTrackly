@@ -276,3 +276,7 @@ _Clear error messages guide users to correct input issues_
 ```
 
 - **Usage:** Check server health with `npm run health` or access directly at `http://localhost:13331/api/health`
+
+## 6. Further Reading
+
+For detailed testing information and test coverage, see `tests/README.md`.

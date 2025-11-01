@@ -106,7 +106,26 @@ npm run backup
   - The new suggestions will appear in the input dropdown
   - No server restart is required
 
-## 7. Using the Application
+## 7. Verify Your Installation
+
+After setup, verify the application works:
+
+```bash
+# With the server running, check the health endpoint
+npm run health
+```
+
+You should see a response showing status "ok" and all data files accessible.
+
+Optionally, run the test suite:
+
+```bash
+npm test
+```
+
+For detailed testing information, see `tests/README.md`.
+
+## 8. Using the Application
 
 Once running, you can track time across multiple projects simultaneously:
 
