@@ -464,6 +464,7 @@ export const stopTimer = async (id) => {
 	}
 
 	const endTime = new Date();
+	const startTime = new Date(endTime.getTime() - finalDurationMs);
 	delete state.activeTimers[id];
 
 	const newEntry = {
@@ -472,7 +473,7 @@ export const stopTimer = async (id) => {
 		totalDurationMs: finalDurationMs,
 		durationSeconds: Math.round(finalDurationMs / CONSTANTS.MS_PER_SECOND),
 		endTime: endTime.toISOString(),
-		createdAt: new Date().toISOString(),
+		createdAt: startTime.toISOString(),
 		notes: activity.notes || "",
 	};
 
