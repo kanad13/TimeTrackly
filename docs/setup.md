@@ -35,11 +35,20 @@ npm install
 npm start
 ```
 
+**(Optional: Start with a custom port)**
+You can start the server on a different port by setting the `PORT` environment variable:
+
+```bash
+PORT=3000 npm start
+```
+
+This will run the app on `http://localhost:3000` (replace `3000` with your desired port).
+
 - **Access the App:** Open your web browser and navigate to `http://localhost:13331`
 - **Stop the Server:** Go back to the terminal and press `Ctrl + C`
 - If you get an error like "port already in use", you can do either of 2 things:
   - Find the existing process using the port and terminate it with the command `lsof -ti:13331 | xargs kill -9` OR
-  - Change the port in `server.cjs` file
+  - Change the port by starting the server with a different port (see above), or by editing the port in `server.cjs` file
 
 ### 3.2. Development Mode (With detailed logging)
 

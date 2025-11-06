@@ -161,7 +161,7 @@ export const renderActiveTimers = () => {
 
 		const projectHeader = document.createElement("div");
 		projectHeader.className =
-			"flex justify-between items-center p-3 bg-gray-200 hover:bg-gray-300 cursor-pointer rounded-lg shadow-sm font-semibold text-gray-800";
+			"project-header flex justify-between items-center p-4 bg-gray-100 cursor-pointer rounded-lg font-semibold text-gray-800 border-b border-gray-300";
 		projectHeader.setAttribute("data-target", projectId);
 		projectHeader.innerHTML = `
 			<div class="flex items-center space-x-2">
@@ -198,10 +198,12 @@ export const renderActiveTimers = () => {
 			card.id = `timer-card-${activity.id}`;
 			card.setAttribute("data-timer-id", activity.id);
 			let cardClasses =
-				"flex flex-col bg-white p-3 rounded-lg shadow-sm border border-gray-100 ml-4";
+				"task-row flex flex-col bg-white p-4 rounded-lg elevation-1 border border-gray-100 ml-4";
 			if (activity.isPaused) {
-				cardClasses += " paused-card";
-			}
+			cardClasses += " task-row-paused";
+		} else {
+			cardClasses += " task-row-active";
+		}
 			card.className = cardClasses;
 
 			const statusText = activity.isPaused
@@ -225,7 +227,7 @@ export const renderActiveTimers = () => {
 				activity.startTime ? activity.startTime.toLocaleTimeString() : "N/A"
 			}</span>
 					</div>
-					<div class="flex items-center space-x-2.5 mt-2 sm:mt-0">
+					<div class="action-buttons flex items-center space-x-2.5 mt-2 sm:mt-0">
 						<span id="duration-${
 							activity.id
 						}" class="text-lg font-mono text-gray-800 w-24 text-right flex-shrink-0">${formatDuration(
