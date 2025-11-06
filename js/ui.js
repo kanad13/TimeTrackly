@@ -163,19 +163,44 @@ export const renderActiveTimers = () => {
 		projectHeader.className =
 			"project-header flex justify-between items-center p-4 bg-gray-100 cursor-pointer rounded-lg font-semibold text-gray-800 border-b border-gray-300";
 		projectHeader.setAttribute("data-target", projectId);
-		projectHeader.innerHTML = `
-			<div class="flex items-center space-x-2">
-				<svg id="icon-${projectId}" class="collapse-icon w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-				<span>${projectKey} (${tasks.length})</span>
-			</div>
+
+		// Create header content
+		const headerContent = document.createElement("div");
+		headerContent.className = "flex items-center space-x-2";
+		headerContent.innerHTML = `
+			<svg id="icon-${projectId}" class="collapse-icon w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+			<span>${projectKey} (${tasks.length})</span>
 		`;
+
+		// STEP 5: Create project action button (add new task in this project)
+		const projectActionBtn = document.createElement("button");
+		projectActionBtn.className = "project-action-btn material-icons";
+		projectActionBtn.textContent = "add";
+		projectActionBtn.setAttribute("title", `Add new task to ${projectKey}`);
+		projectActionBtn.addEventListener("click", (e) => {
+			e.stopPropagation();
+			// Pre-fill input with project name and focus
+			if (domElements && domElements.topicInput) {
+				domElements.topicInput.value = `${projectKey} / `;
+				domElements.topicInput.focus();
+				// Position cursor after the " / "
+				domElements.topicInput.setSelectionRange(
+					domElements.topicInput.value.length,
+					domElements.topicInput.value.length
+				);
+			}
+		});
+
+		projectHeader.appendChild(headerContent);
+		projectHeader.appendChild(projectActionBtn);
 
 		const taskList = document.createElement("div");
 		taskList.id = projectId;
 		taskList.className =
 			"transition-all duration-300 ease-in-out overflow-hidden h-0 space-y-2 pt-2";
 
-		projectHeader.addEventListener("click", () => {
+		// Handle collapse/expand (click on header content, not the action button)
+		headerContent.addEventListener("click", () => {
 			const isCollapsed = taskList.classList.contains("h-0");
 			const icon = document.getElementById(`icon-${projectId}`);
 			if (isCollapsed) {
@@ -194,79 +219,117 @@ export const renderActiveTimers = () => {
 		});
 
 		tasks.forEach((activity) => {
-			const card = document.createElement("div");
-			card.id = `timer-card-${activity.id}`;
-			card.setAttribute("data-timer-id", activity.id);
-			let cardClasses =
-				"task-row flex flex-col bg-white p-4 rounded-lg elevation-1 border border-gray-100 ml-4";
-			if (activity.isPaused) {
-			cardClasses += " task-row-paused";
-		} else {
-			cardClasses += " task-row-active";
-		}
-			card.className = cardClasses;
+			// STEP 1: Create compact horizontal task row
+			const rowContainer = document.createElement("div");
+			rowContainer.className = "task-row-wrapper flex flex-col ml-4 mb-3";
 
-			const statusText = activity.isPaused
-				? '<span class="text-orange-500 font-bold mr-2">(Paused)</span>'
-				: "";
+			const row = document.createElement("div");
+			row.id = `timer-row-${activity.id}`;
+			row.setAttribute("data-timer-id", activity.id);
+			row.className = `task-row flex items-center gap-3 px-4 py-3 rounded-lg elevation-1 border border-gray-200 bg-white cursor-pointer transition-all duration-200 hover:bg-gray-50 group`;
+
+			if (activity.isPaused) {
+				row.classList.add("task-row-paused");
+			} else {
+				row.classList.add("task-row-active");
+			}
+
 			const toggleAction = activity.isPaused ? "resume" : "pause";
 			const toggleClass = activity.isPaused
 				? "bg-green-500 hover:bg-green-600"
 				: "bg-yellow-500 hover:bg-yellow-600";
 			const toggleLabel = activity.isPaused ? "Resume" : "Pause";
 
-			card.innerHTML = `
-				<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2">
-					<div class="flex flex-col text-left mb-2 sm:mb-0">
-						<span class="text-sm font-medium text-gray-700">${statusText} ${
-				activity.task
-			}</span>
-						<span class="text-xs text-gray-400">${
-							activity.isPaused ? "Accumulated" : "Running Since"
-						} ${
-				activity.startTime ? activity.startTime.toLocaleTimeString() : "N/A"
-			}</span>
-					</div>
-					<div class="action-buttons flex items-center space-x-2.5 mt-2 sm:mt-0">
-						<span id="duration-${
-							activity.id
-						}" class="text-lg font-mono text-gray-800 w-24 text-right flex-shrink-0">${formatDuration(
+			// Status indicator (colored circle)
+			const statusIndicator = document.createElement("span");
+			statusIndicator.className = `status-indicator flex-shrink-0 w-3 h-3 rounded-full ${
+				activity.isPaused ? "bg-yellow-500" : "bg-blue-500"
+			}`;
+
+			// Task name
+			const taskNameSpan = document.createElement("span");
+			taskNameSpan.className = "task-name flex-1 text-sm font-medium text-gray-800 truncate";
+			taskNameSpan.textContent = activity.task;
+
+			// Notes badge (only show if notes exist)
+			let notesBadgeSpan = null;
+			if (activity.notes && activity.notes.trim()) {
+				notesBadgeSpan = document.createElement("span");
+				notesBadgeSpan.className = "notes-badge flex-shrink-0 text-lg text-gray-400 opacity-60 group-hover:opacity-100 transition-opacity";
+				notesBadgeSpan.textContent = "📝";
+				notesBadgeSpan.setAttribute("title", "Click to view notes");
+			}
+
+			// Duration display (right-aligned)
+			const durationSpan = document.createElement("span");
+			durationSpan.id = `duration-${activity.id}`;
+			durationSpan.className = "duration flex-shrink-0 text-sm font-mono text-gray-700 w-20 text-right";
+			durationSpan.textContent = formatDuration(
 				Math.floor(calculateElapsedMs(activity) / CONSTANTS.MS_PER_SECOND)
-			)}</span>
-						<button data-action="${toggleAction}" class="${toggleClass} text-white text-xs px-3 py-1 rounded-lg transition duration-150 shadow-sm flex-shrink-0">${toggleLabel}</button>
-						<button data-action="stop" class="bg-red-500 text-white text-xs px-3 py-1 rounded-lg hover:bg-red-600 transition duration-150 shadow-sm flex-shrink-0">Stop</button>
-						<button data-action="delete" class="bg-gray-400 text-white text-xs px-3 py-1 rounded-lg hover:bg-gray-500 transition duration-150 shadow-sm flex-shrink-0">Delete</button>
-					</div>
-				</div>
-				<div class="mt-2">
-					<textarea
-						id="notes-${activity.id}"
-						placeholder="Add notes or comments..."
-						class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
-						rows="2"
-					>${activity.notes || ""}</textarea>
-				</div>
+			);
+
+			// Action buttons (hidden on non-hover, shown on hover)
+			const actionButtons = document.createElement("div");
+			actionButtons.className = "action-buttons flex items-center gap-2 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150";
+			actionButtons.innerHTML = `
+				<button data-action="${toggleAction}" class="${toggleClass} text-white text-xs px-2.5 py-1.5 rounded transition duration-150 shadow-sm">${toggleLabel}</button>
+				<button data-action="stop" class="bg-red-500 hover:bg-red-600 text-white text-xs px-2.5 py-1.5 rounded transition duration-150 shadow-sm">Stop</button>
+				<button data-action="delete" class="bg-gray-400 hover:bg-gray-500 text-white text-xs px-2.5 py-1.5 rounded transition duration-150 shadow-sm">Delete</button>
 			`;
 
-			const toggleButton = card.querySelector(
-				`[data-action="${toggleAction}"]`
-			);
+			// Build row
+			row.appendChild(statusIndicator);
+			row.appendChild(taskNameSpan);
+			if (notesBadgeSpan) {
+				row.appendChild(notesBadgeSpan);
+			}
+			row.appendChild(durationSpan);
+			row.appendChild(actionButtons);
+
+			// STEP 2: Create expandable notes section
+			const notesContainer = document.createElement("div");
+			notesContainer.id = `notes-container-${activity.id}`;
+			notesContainer.className = "task-notes-container hidden ml-6 mt-2 transition-all duration-200";
+
+			const notesTextarea = document.createElement("textarea");
+			notesTextarea.id = `notes-${activity.id}`;
+			notesTextarea.placeholder = "Add notes or comments...";
+			notesTextarea.className = "w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none material-textarea";
+			notesTextarea.rows = "3";
+			notesTextarea.value = activity.notes || "";
+
+			notesContainer.appendChild(notesTextarea);
+
+			// Add to wrapper
+			rowContainer.appendChild(row);
+			rowContainer.appendChild(notesContainer);
+
+			// Event handlers
+			const toggleButton = row.querySelector(`[data-action="${toggleAction}"]`);
 			if (toggleButton) {
-				toggleButton.addEventListener("click", () => toggleTimer(activity.id));
+				toggleButton.addEventListener("click", (e) => {
+					e.stopPropagation();
+					toggleTimer(activity.id);
+				});
 			}
 
-			const stopButton = card.querySelector('[data-action="stop"]');
+			const stopButton = row.querySelector('[data-action="stop"]');
 			if (stopButton) {
-				stopButton.addEventListener("click", () => stopTimer(activity.id));
+				stopButton.addEventListener("click", (e) => {
+					e.stopPropagation();
+					stopTimer(activity.id);
+				});
 			}
 
-			const deleteButton = card.querySelector('[data-action="delete"]');
+			const deleteButton = row.querySelector('[data-action="delete"]');
 			if (deleteButton) {
-				deleteButton.addEventListener("click", () => deleteTimer(activity.id));
+				deleteButton.addEventListener("click", (e) => {
+					e.stopPropagation();
+					deleteTimer(activity.id);
+				});
 			}
 
-			// Add notes change handler
-			const notesTextarea = card.querySelector(`#notes-${activity.id}`);
+			// Notes textarea change handler
 			notesTextarea.addEventListener("blur", async () => {
 				const newNotes = notesTextarea.value;
 				if (state.activeTimers[activity.id]) {
@@ -285,7 +348,32 @@ export const renderActiveTimers = () => {
 					}
 				}
 			});
-			taskList.appendChild(card);
+
+			// STEP 2: Toggle notes visibility on row click or notes badge click
+			const expandRow = () => {
+				const notesDiv = document.getElementById(`notes-container-${activity.id}`);
+				const isHidden = notesDiv.classList.contains("hidden");
+
+				// Close all other expanded notes in this project
+				document.querySelectorAll(".task-notes-container:not(.hidden)").forEach((el) => {
+					el.classList.add("hidden");
+				});
+
+				if (isHidden) {
+					notesDiv.classList.remove("hidden");
+					notesTextarea.focus();
+				}
+			};
+
+			row.addEventListener("click", expandRow);
+			if (notesBadgeSpan) {
+				notesBadgeSpan.addEventListener("click", (e) => {
+					e.stopPropagation();
+					expandRow();
+				});
+			}
+
+			taskList.appendChild(rowContainer);
 		});
 		domElements.activeTimersList.appendChild(projectHeader);
 		domElements.activeTimersList.appendChild(taskList);
