@@ -242,25 +242,20 @@
 		transform: scale(1.3);
 	}
 
-	/* STEP 2: Expandable notes container */
+	/* STEP 2: Notes container (visible by default) */
 	.task-notes-container {
-		max-height: 200px;
-		overflow-y: auto;
+		background-color: #F9FAFB;
+		border-top: 1px solid #E5E7EB;
+		border-bottom: 1px solid #E5E7EB;
 	}
 
-	.task-notes-container:not(.hidden) {
-		animation: slideDown 0.2s ease-out;
+	.task-notes-container textarea {
+		background-color: white;
+		border: 1px solid #D1D5DB;
 	}
 
-	@keyframes slideDown {
-		from {
-			opacity: 0;
-			max-height: 0;
-		}
-		to {
-			opacity: 1;
-			max-height: 200px;
-		}
+	.task-notes-container textarea:focus {
+		background-color: white;
 	}
 
 	/* STEP 3: Notes badge styling */

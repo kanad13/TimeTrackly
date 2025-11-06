@@ -166,7 +166,7 @@ export const renderActiveTimers = () => {
 
 		// Create header content
 		const headerContent = document.createElement("div");
-		headerContent.className = "flex items-center space-x-2";
+		headerContent.className = "flex items-center space-x-2 flex-1";
 		headerContent.innerHTML = `
 			<svg id="icon-${projectId}" class="collapse-icon w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
 			<span>${projectKey} (${tasks.length})</span>
@@ -180,13 +180,14 @@ export const renderActiveTimers = () => {
 		projectActionBtn.addEventListener("click", (e) => {
 			e.stopPropagation();
 			// Pre-fill input with project name and focus
-			if (domElements && domElements.topicInput) {
-				domElements.topicInput.value = `${projectKey} / `;
-				domElements.topicInput.focus();
+			const input = document.getElementById("topic-input");
+			if (input) {
+				input.value = `${projectKey} / `;
+				input.focus();
 				// Position cursor after the " / "
-				domElements.topicInput.setSelectionRange(
-					domElements.topicInput.value.length,
-					domElements.topicInput.value.length
+				input.setSelectionRange(
+					input.value.length,
+					input.value.length
 				);
 			}
 		});
@@ -199,8 +200,13 @@ export const renderActiveTimers = () => {
 		taskList.className =
 			"transition-all duration-300 ease-in-out overflow-hidden h-0 space-y-2 pt-2";
 
-		// Handle collapse/expand (click on header content, not the action button)
-		headerContent.addEventListener("click", () => {
+		// Handle collapse/expand (click on header, but not the action button)
+		projectHeader.addEventListener("click", (e) => {
+			// Don't toggle if clicked on the action button
+			if (e.target.closest(".project-action-btn")) {
+				return;
+			}
+
 			const isCollapsed = taskList.classList.contains("h-0");
 			const icon = document.getElementById(`icon-${projectId}`);
 			if (isCollapsed) {
@@ -268,9 +274,9 @@ export const renderActiveTimers = () => {
 				Math.floor(calculateElapsedMs(activity) / CONSTANTS.MS_PER_SECOND)
 			);
 
-			// Action buttons (hidden on non-hover, shown on hover)
+			// Action buttons (always visible)
 			const actionButtons = document.createElement("div");
-			actionButtons.className = "action-buttons flex items-center gap-2 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150";
+			actionButtons.className = "action-buttons flex items-center gap-2 flex-shrink-0";
 			actionButtons.innerHTML = `
 				<button data-action="${toggleAction}" class="${toggleClass} text-white text-xs px-2.5 py-1.5 rounded transition duration-150 shadow-sm">${toggleLabel}</button>
 				<button data-action="stop" class="bg-red-500 hover:bg-red-600 text-white text-xs px-2.5 py-1.5 rounded transition duration-150 shadow-sm">Stop</button>
@@ -289,13 +295,13 @@ export const renderActiveTimers = () => {
 			// STEP 2: Create expandable notes section
 			const notesContainer = document.createElement("div");
 			notesContainer.id = `notes-container-${activity.id}`;
-			notesContainer.className = "task-notes-container hidden ml-6 mt-2 transition-all duration-200";
+			notesContainer.className = "task-notes-container ml-6 mt-2 pt-2 pb-2 bg-gray-50 rounded px-3 transition-all duration-200";
 
 			const notesTextarea = document.createElement("textarea");
 			notesTextarea.id = `notes-${activity.id}`;
 			notesTextarea.placeholder = "Add notes or comments...";
 			notesTextarea.className = "w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none material-textarea";
-			notesTextarea.rows = "3";
+			notesTextarea.rows = "2";
 			notesTextarea.value = activity.notes || "";
 
 			notesContainer.appendChild(notesTextarea);
@@ -349,27 +355,11 @@ export const renderActiveTimers = () => {
 				}
 			});
 
-			// STEP 2: Toggle notes visibility on row click or notes badge click
-			const expandRow = () => {
-				const notesDiv = document.getElementById(`notes-container-${activity.id}`);
-				const isHidden = notesDiv.classList.contains("hidden");
-
-				// Close all other expanded notes in this project
-				document.querySelectorAll(".task-notes-container:not(.hidden)").forEach((el) => {
-					el.classList.add("hidden");
-				});
-
-				if (isHidden) {
-					notesDiv.classList.remove("hidden");
-					notesTextarea.focus();
-				}
-			};
-
-			row.addEventListener("click", expandRow);
+			// Notes focus when clicking badge (notes now visible by default)
 			if (notesBadgeSpan) {
 				notesBadgeSpan.addEventListener("click", (e) => {
 					e.stopPropagation();
-					expandRow();
+					notesTextarea.focus();
 				});
 			}
 
