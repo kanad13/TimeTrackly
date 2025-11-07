@@ -162,11 +162,12 @@ async function testStartTimer(page) {
 	}
 
 	// Expand Start New Timer section if collapsed
+	// Ensure Start New Timer section is expanded
 	const startSectionHeight = await page.$eval(
 		"#data-entry-content",
 		(el) => el.offsetHeight
 	);
-	if (startSectionHeight === 0) {
+	if (startSectionHeight < 5) {
 		await page.click("#data-entry-header");
 		await delay(500);
 	}
@@ -176,6 +177,16 @@ async function testStartTimer(page) {
 	await page.type("#topic-input", projectTask);
 	await page.click("#start-button");
 	await delay(1000);
+
+	// Ensure Active Timers section is expanded to see the timer
+	const activeTimersHeight = await page.$eval(
+		"#active-timers-content",
+		(el) => el.offsetHeight
+	);
+	if (activeTimersHeight < 5) {
+		await page.click("#active-timers-header");
+		await delay(500);
+	}
 
 	// Verify timer appears
 	const timerCard = await page.$("[data-timer-id]");
@@ -204,34 +215,61 @@ async function testStartTimer(page) {
 async function testTimerNotes(page) {
 	console.log("\n📋 Test 4: Timer Notes");
 
-	// Find notes textarea
-	const notesTextarea = await page.$('textarea[id^="notes-"]');
-	if (!notesTextarea) {
-		throw new Error("Notes textarea not found");
+	// Find and click Notes button to open modal
+	const notesButton = await page.$('[data-action="notes"]');
+	if (!notesButton) {
+		throw new Error("Notes button not found");
+	}
+	await notesButton.click();
+	await delay(500);
+
+	// Verify modal opened
+	const modal = await page.$("#notes-modal");
+	const modalVisible = await modal.evaluate((el) =>
+		el.classList.contains("active")
+	);
+	if (!modalVisible) {
+		throw new Error("Notes modal did not open");
 	}
 
-	// Add notes
+	// Add notes in modal textarea
 	const testNotes =
 		"This is a test note with multiple lines.\nLine 2\nLine 3 with special chars: @#$%";
-	await notesTextarea.type(testNotes);
+	await page.type("#notes-modal-textarea", testNotes);
 
-	// Click outside to trigger blur (auto-save)
-	await page.click("h1");
+	// Click Save button
+	await page.click("#notes-modal-save");
 	await delay(1000);
 
+	// Verify modal closed
+	const modalStillVisible = await modal.evaluate((el) =>
+		el.classList.contains("active")
+	);
+	if (modalStillVisible) {
+		throw new Error("Notes modal did not close after save");
+	}
+
+	// Reopen modal to verify notes were saved
+	await notesButton.click();
+	await delay(500);
+
 	// Verify notes persisted
-	const savedNotes = await notesTextarea.evaluate((el) => el.value);
+	const savedNotes = await page.$eval("#notes-modal-textarea", (el) => el.value);
 	if (!savedNotes.includes("test note")) {
 		throw new Error("Notes not saved");
 	}
+
+	// Close modal
+	await page.click("#notes-modal-close");
+	await delay(500);
 
 	await page.screenshot({
 		path: path.join(CONFIG.screenshotDir, "04-notes-added.png"),
 		fullPage: true,
 	});
 
-	console.log("   ✅ Notes added successfully");
-	console.log("   ✅ Notes auto-saved on blur");
+	console.log("   ✅ Notes modal opens/closes correctly");
+	console.log("   ✅ Notes saved successfully");
 }
 
 /**
@@ -249,9 +287,9 @@ async function testPauseResume(page) {
 	await pauseButton.click();
 	await delay(1000);
 
-	// Verify paused state (orange border)
+	// Verify paused state (yellow border - task-row-paused class)
 	const isPaused = await page.$eval("[data-timer-id]", (el) =>
-		el.classList.contains("paused-card")
+		el.classList.contains("task-row-paused")
 	);
 
 	if (!isPaused) {
@@ -526,7 +564,7 @@ async function testErrorHandling(page) {
 		"#data-entry-content",
 		(el) => el.offsetHeight
 	);
-	if (startSectionHeight === 0) {
+	if (startSectionHeight < 5) {
 		await page.click("#data-entry-header");
 		await delay(500);
 	}
