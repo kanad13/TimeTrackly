@@ -58,7 +58,7 @@ async function testInitialLoad(page) {
 	const reportsTab = await page.$("#tab-reports");
 
 	if (!app) throw new Error("Main app container not found");
-	if (title !== "Time Tracker") throw new Error("Title incorrect");
+	if (title !== "Time Trackly") throw new Error("Title incorrect");
 	if (!trackerTab || !reportsTab) throw new Error("Tabs not found");
 
 	await page.screenshot({
@@ -105,7 +105,8 @@ async function testCollapsibleSections(page) {
 			section.content,
 			(el) => el.offsetHeight
 		);
-		const isCollapsed = initialHeight === 0;
+		// Consider collapsed if height is very small (accounts for borders/padding)
+		const isCollapsed = initialHeight < 5;
 
 		if (isCollapsed !== section.initiallyCollapsed) {
 			throw new Error(`${section.name}: Initial state incorrect`);
@@ -119,7 +120,8 @@ async function testCollapsibleSections(page) {
 			section.content,
 			(el) => el.offsetHeight
 		);
-		const isNowExpanded = newHeight > 0;
+		// Match the collapsed threshold - expanded means height > 5px
+		const isNowExpanded = newHeight >= 5;
 
 		if (isCollapsed === isNowExpanded) {
 			console.log(`      ✅ ${section.name} toggled successfully`);
@@ -386,6 +388,13 @@ async function testDataPersistence(page, browser) {
 	// Close and reopen page
 	await page.close();
 	const newPage = await browser.newPage();
+
+	// Add dialog handler to new page
+	newPage.on("dialog", async (dialog) => {
+		console.log(`   ℹ️  Dialog: ${dialog.message()}`);
+		await dialog.accept();
+	});
+
 	await newPage.goto(CONFIG.baseUrl, { waitUntil: "networkidle0" });
 	await delay(2000);
 
@@ -618,6 +627,7 @@ async function runAllTests() {
 		headless: CONFIG.headless,
 		defaultViewport: CONFIG.viewport,
 		args: ["--no-sandbox", "--disable-setuid-sandbox"],
+		protocolTimeout: 180000, // 3 minutes (prevents timeouts on slow environments)
 	});
 
 	let page = await browser.newPage();
@@ -627,6 +637,12 @@ async function runAllTests() {
 		if (msg.type() === "error") {
 			console.log("   ⚠️  PAGE ERROR:", msg.text());
 		}
+	});
+
+	// Handle confirm dialogs (auto-accept for delete confirmation)
+	page.on("dialog", async (dialog) => {
+		console.log(`   ℹ️  Dialog: ${dialog.message()}`);
+		await dialog.accept();
 	});
 
 	try {

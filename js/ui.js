@@ -268,6 +268,19 @@ export const initNotesModal = () => {
 export const renderActiveTimers = () => {
 	if (!domElements) return;
 
+	// BUGFIX: Preserve expanded/collapsed state across re-renders
+	// Before clearing DOM, capture which projects are currently expanded
+	const currentlyExpandedProjects = new Set();
+	domElements.activeTimersList.querySelectorAll('.project-header').forEach(header => {
+		const projectId = header.getAttribute('data-target');
+		const taskList = document.getElementById(projectId);
+		if (taskList && !taskList.classList.contains('h-0')) {
+			currentlyExpandedProjects.add(projectId);
+		}
+	});
+	// Update state with current expanded projects
+	state.expandedProjects = currentlyExpandedProjects;
+
 	domElements.activeTimersList.innerHTML = "";
 	const timersArray = Object.entries(state.activeTimers).map(([id, data]) => ({
 		id,
@@ -350,12 +363,16 @@ export const renderActiveTimers = () => {
 			const isCollapsed = taskList.classList.contains("h-0");
 			const icon = document.getElementById(`icon-${projectId}`);
 			if (isCollapsed) {
+				// Expanding
 				taskList.classList.remove("h-0");
 				taskList.style.height = `${taskList.scrollHeight}px`;
 				icon.classList.add("rotate-90");
+				state.expandedProjects.add(projectId); // Track expanded state
 			} else {
+				// Collapsing
 				taskList.style.height = "0";
 				icon.classList.remove("rotate-90");
+				state.expandedProjects.delete(projectId); // Track collapsed state
 				taskList.addEventListener(
 					"transitionend",
 					() => taskList.classList.add("h-0"),
@@ -363,6 +380,18 @@ export const renderActiveTimers = () => {
 				);
 			}
 		});
+
+		// BUGFIX: Restore expanded state after rebuilding DOM
+		// Check if this project was expanded before re-render
+		if (state.expandedProjects.has(projectId)) {
+			// Restore expanded state immediately after creation
+			setTimeout(() => {
+				taskList.classList.remove("h-0");
+				taskList.style.height = `${taskList.scrollHeight}px`;
+				const icon = document.getElementById(`icon-${projectId}`);
+				if (icon) icon.classList.add("rotate-90");
+			}, 0);
+		}
 
 		tasks.forEach((activity) => {
 			// STEP 1: Create compact horizontal task row
@@ -632,6 +661,8 @@ export const toggleTimer = async (id) => {
 /**
  * Deletes a timer without saving it to history
  *
+ * SAFETY: Requires user confirmation before deletion to prevent accidental data loss.
+ *
  * ERROR HANDLING & ROLLBACK:
  * If server save fails, we restore the timer to state and show error message.
  * This prevents silent data loss if the network is down.
@@ -643,6 +674,14 @@ export const deleteTimer = async (id) => {
 
 	// Store backup in case we need to rollback
 	const timerBackup = state.activeTimers[id];
+
+	// Confirmation dialog to prevent accidental deletion
+	const taskName = `${timerBackup.project} / ${timerBackup.task}`;
+	const confirmed = confirm(
+		`Delete "${taskName}"?\n\nThis timer will be permanently discarded without being saved to history.`
+	);
+
+	if (!confirmed) return;
 
 	try {
 		delete state.activeTimers[id];

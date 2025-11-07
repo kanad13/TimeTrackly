@@ -61,6 +61,7 @@ export const state = {
 	activeTimers: {},
 	timerInterval: null,
 	activeChartInstances: [],
+	expandedProjects: new Set(), // Tracks which project sections are expanded
 };
 
 /**

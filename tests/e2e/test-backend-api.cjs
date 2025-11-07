@@ -320,7 +320,7 @@ test("GET / returns HTML", async () => {
 
 	assert.strictEqual(res.status, 200);
 	assert.ok(html.includes("<html"), "Should return HTML content");
-	assert.ok(html.includes("Time Tracker"), "Should be the time tracker app");
+	assert.ok(html.includes("TimeTrackly"), "Should be the time tracker app");
 });
 
 test("GET /index.html returns HTML", async () => {
