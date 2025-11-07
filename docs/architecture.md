@@ -171,7 +171,7 @@
 - Empty or whitespace-only task names are rejected with helpful guidance
 - Error messages use color-coded styling (red for errors) for immediate recognition
 
-![Error Validation](/assets/030-ui_error_validation.png)
+![Error Validation](../assets/030-ui_error_validation.png)
 _Clear error messages guide users to correct input issues_
 
 ## 4. Implementation Details

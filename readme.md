@@ -4,7 +4,7 @@
 
 TimeTrackly is a personal time tracker that runs entirely on your computer - no sign-ups, no data collection, zero cloud dependencies. Just you, your time, and a beautifully simple interface. Your data never leaves your machine.
 
-![](/assets/010-ui_initial_load.png)
+![UI Initial Load](assets/010-ui_initial_load.png)
 _Clean, Material Design-inspired interface with collapsible sections_
 
 ## Why TimeTrackly?
@@ -79,7 +79,7 @@ Once the server is running, the workflow is simple and intuitive.
 
 ### 2.4. Error Handling & Validation
 
-![Error Validation](/assets/030-ui_error_validation.png)
+![Error Validation](assets/030-ui_error_validation.png)
 _Clear error messages guide you when input is invalid_
 
 ## 3. Stack & Deployment
@@ -94,32 +94,15 @@ The application runs locally using a simple Node.js server with zero external de
 | **Configuration** | `mtt-suggestions.json`                                                     | A user-editable JSON file for populating input suggestions                       |
 | **Deployment**    | Local Machine Execution                                                    | Run via `npm start` or `npm run dev`                                             |
 
-## 4. Getting Started (30 Seconds)
-
-### Prerequisites
-
-- **Node.js** (v16+) – [Download](https://nodejs.org/)
-- **Git** – [Download](https://git-scm.com/)
-
-### Installation & Run
+## 4. Quick Start
 
 ```bash
-# Clone the repository
-git clone https://github.com/kanad13/TimeTrackly.git
-cd TimeTrackly
-
-# Start the server
-npm start
-
-# That's it! Open http://localhost:13331 in your browser
+git clone https://github.com/kanad13/TimeTrackly.git && cd TimeTrackly && npm start
 ```
 
-Your data is already being saved locally to `mtt-data.json`.
+Then open http://localhost:13331 in your browser. Done. Your data is saved locally to `mtt-data.json`.
 
-### Next Steps
-
-- For detailed setup and troubleshooting, see `docs/setup.md`
-- For a deep dive into architecture, see `docs/architecture.md`
+**Requires:** Node.js v16+ | **For detailed setup and troubleshooting**, see [docs/setup.md](docs/setup.md)
 
 ## 5. Testing
 
@@ -131,6 +114,6 @@ npm test  # Run all tests
 
 For detailed testing information, test coverage, and how to write tests, see [`tests/README.md`](tests/README.md).
 
-## 6. Detailed Guidance
+## 6. Documentation
 
-- For a deep dive into the architecture and design rationale, please refer to the comprehensive `architecture.md`.
+For a deep dive into the architecture and design rationale, see [docs/architecture.md](docs/architecture.md). For all documentation, see [docs/readme.md](docs/readme.md).

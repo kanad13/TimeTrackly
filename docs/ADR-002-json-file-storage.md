@@ -1,7 +1,7 @@
 # ADR-002: Use JSON Files for Storage Instead of a Database
 
 **Status:** ACCEPTED
-**Date:** 2024
+**Date:** 2024-10-20
 **Affected Component:** Backend (server.cjs, data persistence)
 
 ## Context

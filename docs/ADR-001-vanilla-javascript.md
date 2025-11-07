@@ -1,7 +1,7 @@
 # ADR-001: Use Vanilla JavaScript Instead of a Framework
 
 **Status:** ACCEPTED
-**Date:** 2024-2024
+**Date:** 2024-10-15
 **Affected Component:** Frontend (all)
 
 ## Context

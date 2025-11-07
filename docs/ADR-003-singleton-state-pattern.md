@@ -1,7 +1,7 @@
 # ADR-003: Use ES6 Module Singleton Pattern for State Management
 
 **Status:** ACCEPTED
-**Date:** 2024
+**Date:** 2024-10-25
 **Affected Component:** Frontend (state.js, all modules importing state)
 
 ## Context

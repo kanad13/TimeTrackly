@@ -1,16 +1,36 @@
-# Documentation
+# Documentation Index
 
-This folder contains project documentation:
+TimeTrackly documentation is organized by purpose and audience. Start with what matches your role:
 
-## User and Developer Guides
-- **readme.md** - User guide with features, usage instructions, and stack overview
-- **architecture.md** - Technical architecture, design decisions, and developer guide
-- **setup.md** - Installation and setup instructions
-- **API.md** - Frontend module API documentation and function signatures
+## Getting Started
 
-## Architecture Decision Records (ADRs)
-- **ADR-001-vanilla-javascript.md** - Decision to use vanilla JavaScript over frameworks
-- **ADR-002-json-file-storage.md** - Decision to use JSON file storage over databases
-- **ADR-003-singleton-state-pattern.md** - Decision to use singleton state management pattern
+- **[../readme.md](../readme.md)** – **Start here.** Overview, features, quick start (30 seconds), and tech stack. For users and new developers.
+- **[setup.md](setup.md)** – Detailed installation, running modes (dev/production), health checks, and troubleshooting.
 
-For testing documentation, see [tests/README.md](../tests/README.md).
+## Architecture & Design
+
+- **[architecture.md](architecture.md)** – Complete technical architecture for developers. Covers module structure, data flow, design philosophy, and implementation patterns.
+- **[API.md](API.md)** – Frontend API reference. Function signatures, state structures, and module exports for all 7 ES6 modules.
+
+## Decision Records
+
+Why certain choices were made over alternatives (read when you want to understand the "why" behind architectural decisions):
+
+- **[ADR-001-vanilla-javascript.md](ADR-001-vanilla-javascript.md)** – Why vanilla JavaScript over React/Vue/frameworks
+- **[ADR-002-json-file-storage.md](ADR-002-json-file-storage.md)** – Why JSON files over databases (SQLite, PostgreSQL)
+- **[ADR-003-singleton-state-pattern.md](ADR-003-singleton-state-pattern.md)** – Why ES6 singleton pattern over Redux/MobX
+
+## Testing
+
+See **[../tests/README.md](../tests/README.md)** for comprehensive testing guide, test patterns, and CI/CD information.
+
+---
+
+### At a Glance
+
+| Role | Read First | Then Read |
+|------|------------|-----------|
+| **User** | [../readme.md](../readme.md) | [setup.md](setup.md) |
+| **Developer** | [architecture.md](architecture.md) | [API.md](API.md) |
+| **Decision Reviewer** | Any [ADR](.) | [architecture.md](architecture.md) for context |
+| **Contributor** | [../CONTRIBUTING.md](../CONTRIBUTING.md) | [architecture.md](architecture.md) + [../tests/README.md](../tests/README.md) |
