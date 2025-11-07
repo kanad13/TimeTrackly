@@ -4,9 +4,9 @@ This guide helps you make changes confidently and maintain quality.
 
 ## Quick Reference
 
-**Before changing code**: Read relevant module documentation in [docs/API.md](docs/API.md)
+**Before changing code**: Read relevant module documentation in [api.md](api.md)
 **After making changes**: Run tests, update docs if needed, commit with clear message
-**When stuck**: Check [docs/architecture.md](docs/architecture.md) for design philosophy
+**When stuck**: Check [architecture.md](architecture.md) for design philosophy
 
 ## Development Workflow
 
@@ -15,7 +15,7 @@ This guide helps you make changes confidently and maintain quality.
 ```bash
 # 1. Understand the change
 # - Read the relevant module's JSDoc comments
-# - Check docs/architecture.md for design constraints
+# - Check architecture.md for design constraints
 # - Review existing tests for the module
 
 # 2. Make your changes
@@ -36,22 +36,22 @@ npm run dev               # Start with verbose logging
 
 ### 2. When to Update Documentation
 
-**Update [docs/API.md](docs/API.md)** when:
+**Update [api.md](api.md)** when:
 - Adding/removing exported functions
 - Changing function signatures
 - Modifying module responsibilities
 
-**Update [docs/architecture.md](docs/architecture.md)** when:
+**Update [architecture.md](architecture.md)** when:
 - Changing data models
 - Modifying state structure
 - Altering system behavior or workflows
 
-**Update [docs/setup.md](docs/setup.md)** when:
+**Update [setup.md](setup.md)** when:
 - Adding npm scripts
 - Changing environment requirements
 - Modifying deployment steps
 
-**Update [docs/readme.md](docs/readme.md)** when:
+**Update [../readme.md](../readme.md)** when:
 - Adding user-facing features
 - Changing UI behavior
 - Updating usage instructions
@@ -85,55 +85,7 @@ server.cjs       → tests/e2e/test-backend-api.cjs
 User workflows   → tests/e2e/test-ui-complete.cjs
 ```
 
-See [tests/README.md](tests/README.md) for detailed testing documentation.
-
-## Architecture Decision Records (ADRs)
-
-### When to Create an ADR
-
-Create a new ADR in `docs/ADR-###-title.md` when a decision meets **all** criteria:
-
-1. **Long-term implications** - Hard to reverse later (e.g., framework choice, data storage)
-2. **Clear tradeoffs** - Multiple valid alternatives were seriously considered
-3. **Non-obvious from code** - Future maintainers need context for "why"
-4. **Architectural impact** - Affects multiple modules or overall system design
-
-### Examples of ADR-Worthy Decisions
-
-**YES - Create ADR:**
-- Choosing vanilla JS over React/Vue (affects all future development)
-- Using JSON files vs SQLite/PostgreSQL (affects scaling and deployment)
-- Local-only vs cloud-based architecture (fundamentally different systems)
-
-**NO - Don't create ADR:**
-- Which CSS framework to use (easily swappable)
-- Implementation patterns within a single module (document in code comments)
-- Tactical choices without long-term lock-in (refactor cost is low)
-
-### ADR Template
-
-```markdown
-# ADR-###: [Decision Title]
-
-**Status**: Accepted
-**Date**: YYYY-MM-DD
-
-## Context
-What problem are we solving? What constraints exist?
-
-## Decision
-What did we decide? Be specific.
-
-## Consequences
-**Benefits:**
-- List positive outcomes
-
-**Tradeoffs:**
-- List what we gave up or accepted as limitations
-
-## Alternatives Considered
-What other options did we evaluate and why were they rejected?
-```
+See [../tests/README.md](../tests/README.md) for detailed testing documentation.
 
 ## Code Quality Checklist
 
@@ -166,10 +118,10 @@ Before committing, verify:
 
 ## Getting Help
 
-- **Architecture questions**: See [docs/architecture.md](docs/architecture.md)
-- **API usage**: See [docs/API.md](docs/API.md)
-- **Testing patterns**: See [tests/README.md](tests/README.md)
-- **Setup issues**: See [docs/setup.md](docs/setup.md)
+- **Architecture questions**: See [architecture.md](architecture.md)
+- **API usage**: See [api.md](api.md)
+- **Testing patterns**: See [../tests/README.md](../tests/README.md)
+- **Setup issues**: See [setup.md](setup.md)
 
 ---
 

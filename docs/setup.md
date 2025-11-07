@@ -3,7 +3,7 @@
 - **TimeTrackly** runs as a local application on your machine using Node.js
 - The application features a modular architecture with robust error handling to ensure your data remains private and provides a consistent experience across all browsers
 
-![](/assets/010-ui_initial_load.png)
+![UI Initial Load](../assets/010-ui_initial_load.png)
 _The clean, Material Design-inspired interface after setup_
 
 ## 1. Prerequisites
@@ -138,4 +138,4 @@ For detailed testing information, see `tests/README.md`.
 
 Once running, you can track time across multiple projects simultaneously:
 
-- ![](/assets/010-ui_initial_load.png)
+- ![UI Screenshot](../assets/010-ui_initial_load.png)

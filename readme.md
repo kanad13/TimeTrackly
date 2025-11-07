@@ -112,7 +112,7 @@ TimeTrackly is comprehensively tested with unit tests, API tests, and end-to-end
 npm test  # Run all tests
 ```
 
-For detailed testing information, test coverage, and how to write tests, see [`tests/README.md`](tests/README.md).
+For detailed testing information, test coverage, and how to write tests, see [tests/README.md](tests/README.md).
 
 ## 6. Documentation
 
