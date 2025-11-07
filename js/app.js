@@ -56,6 +56,7 @@ import {
 } from "./ui.js";
 import { switchTab } from "./reports.js";
 import { showNotification } from "./utils.js";
+import { CONSTANTS } from "./constants.js";
 
 /**
  * Initializes the application and sets up the user interface
