@@ -314,7 +314,7 @@ export const renderActiveTimers = () => {
 
 		const projectHeader = document.createElement("div");
 		projectHeader.className =
-			"project-header flex justify-between items-center p-4 bg-gray-100 cursor-pointer rounded-lg font-semibold text-gray-800 border-b border-gray-300";
+			"project-header flex justify-between items-center p-2 bg-gray-100 cursor-pointer rounded-lg font-semibold text-gray-800 border-b border-gray-300";
 		projectHeader.setAttribute("data-target", projectId);
 
 		// Create header content
@@ -351,7 +351,7 @@ export const renderActiveTimers = () => {
 		const taskList = document.createElement("div");
 		taskList.id = projectId;
 		taskList.className =
-			"transition-all duration-300 ease-in-out overflow-hidden h-0 space-y-2 pt-2";
+			"transition-all duration-300 ease-in-out overflow-hidden h-0 space-y-1 pt-1";
 
 		// Handle collapse/expand (click on header, but not the action button)
 		projectHeader.addEventListener("click", (e) => {
@@ -396,12 +396,12 @@ export const renderActiveTimers = () => {
 		tasks.forEach((activity) => {
 			// STEP 1: Create compact horizontal task row
 			const rowContainer = document.createElement("div");
-			rowContainer.className = "task-row-wrapper flex flex-col ml-4 mb-3";
+			rowContainer.className = "task-row-wrapper flex flex-col ml-2 mb-1";
 
 			const row = document.createElement("div");
 			row.id = `timer-row-${activity.id}`;
 			row.setAttribute("data-timer-id", activity.id);
-			row.className = `task-row flex items-center gap-3 px-4 py-3 rounded-lg elevation-1 border border-gray-200 bg-white cursor-pointer transition-all duration-200 hover:bg-gray-50 group`;
+			row.className = `task-row flex items-center gap-2 px-3 py-2 rounded-lg elevation-1 border border-gray-200 bg-white cursor-pointer transition-all duration-200 hover:bg-gray-50 group`;
 
 			if (activity.isPaused) {
 				row.classList.add("task-row-paused");
@@ -417,7 +417,7 @@ export const renderActiveTimers = () => {
 
 			// Status indicator (colored circle)
 			const statusIndicator = document.createElement("span");
-			statusIndicator.className = `status-indicator flex-shrink-0 w-3 h-3 rounded-full ${
+			statusIndicator.className = `status-indicator flex-shrink-0 w-2 h-2 rounded-full ${
 				activity.isPaused ? "bg-yellow-500" : "bg-blue-500"
 			}`;
 
@@ -430,19 +430,19 @@ export const renderActiveTimers = () => {
 			// Duration display (right-aligned)
 			const durationSpan = document.createElement("span");
 			durationSpan.id = `duration-${activity.id}`;
-			durationSpan.className = "duration flex-shrink-0 text-sm font-mono text-gray-700 w-20 text-right";
+			durationSpan.className = "duration flex-shrink-0 text-sm font-mono text-gray-700 w-16 text-right";
 			durationSpan.textContent = formatDuration(
 				Math.floor(calculateElapsedMs(activity) / CONSTANTS.MS_PER_SECOND)
 			);
 
 			// Action buttons (always visible)
 			const actionButtons = document.createElement("div");
-			actionButtons.className = "action-buttons flex items-center gap-2 flex-shrink-0";
+			actionButtons.className = "action-buttons flex items-center gap-1 flex-shrink-0";
 			actionButtons.innerHTML = `
-				<button data-action="${toggleAction}" class="${toggleClass} text-white text-xs px-2.5 py-1.5 rounded transition duration-150 shadow-sm min-w-16">${toggleLabel}</button>
-				<button data-action="stop" class="bg-red-500 hover:bg-red-600 text-white text-xs px-2.5 py-1.5 rounded transition duration-150 shadow-sm">Stop</button>
-				<button data-action="delete" class="bg-gray-400 hover:bg-gray-500 text-white text-xs px-2.5 py-1.5 rounded transition duration-150 shadow-sm">Delete</button>
-				<button data-action="notes" class="bg-indigo-500 hover:bg-indigo-600 text-white text-xs px-2.5 py-1.5 rounded transition duration-150 shadow-sm">Notes</button>
+				<button data-action="${toggleAction}" class="${toggleClass} text-white text-xs px-2 py-1 rounded transition duration-150 shadow-sm min-w-14">${toggleLabel}</button>
+				<button data-action="stop" class="bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 rounded transition duration-150 shadow-sm">Stop</button>
+				<button data-action="delete" class="bg-gray-400 hover:bg-gray-500 text-white text-xs px-2 py-1 rounded transition duration-150 shadow-sm">Delete</button>
+				<button data-action="notes" class="bg-indigo-500 hover:bg-indigo-600 text-white text-xs px-2 py-1 rounded transition duration-150 shadow-sm">Notes</button>
 			`;
 
 			// Build row
