@@ -19,60 +19,35 @@ TimeTrackly is a single-user, local-first time tracker. This document explains w
 
 ### 1. Vanilla JavaScript, Not React/Vue/Svelte
 
-**Why:** TimeTrackly is ~2,200 lines of code. Adding a framework means:
-- 40-70KB bundle overhead (bloat)
-- Build step required (friction)
-- Framework learning curve (unnecessary for one person)
-- Framework-specific patterns (overkill)
+**Why:** ~2K lines doesn't justify 40-70KB framework overhead + build step + learning curve.
 
-For a single-page app this simple, vanilla JavaScript is the right tool.
+**What:** 8 ES6 modules (constants, utils, state, api, ui, reports, app, logger) with direct DOM manipulation.
 
-**What:** 7 ES6 modules with direct DOM manipulation
-- `constants.js` - Configuration and magic numbers
-- `utils.js` - UUID, formatting, sanitization, notifications
-- `state.js` - Singleton state object + helper functions
-- `api.js` - Server communication layer
-- `ui.js` - DOM rendering and user interactions
-- `reports.js` - Charts via Chart.js CDN
-- `app.js` - Initialization and lifecycle
-
-**Tradeoff:** Must manually re-render the DOM. Solution: discipline + code review. Always call `renderActiveTimers()` after state changes.
+**Tradeoff:** Manual DOM re-rendering. Solution: discipline + always call `renderActiveTimers()` after state changes.
 
 ---
 
 ### 2. JSON Files, Not SQLite/PostgreSQL
 
-**Why:** TimeTrackly is single-user and offline-first. A database means:
-- Installation complexity (setup required)
-- Extra dependencies (npm packages)
-- Overkill for < 100KB of data
-- Harder to inspect and debug
-- Harder to backup manually
+**Why:** Single-user, offline-first. Database adds setup complexity + dependencies for <100KB data. Human-readable files are easier to inspect and backup.
 
-JSON files give you human-readable data you can inspect in any text editor.
-
-**What:** Three files in project root
-- `mtt-data.json` - Historical completed entries (array of objects)
-- `mtt-active-state.json` - Currently running/paused timers (object with UUID keys)
-- `mtt-suggestions.json` - User task suggestions (array of strings)
+**What:** Three files: `mtt-data.json` (historical entries), `mtt-active-state.json` (active timers), `mtt-suggestions.json` (user suggestions).
 
 **Data Structures:**
 
-Historical entry (mtt-data.json):
 ```json
+// Historical entry (mtt-data.json)
 {
   "project": "string",
   "task": "string",
   "totalDurationMs": number,
   "durationSeconds": number,
-  "endTime": "ISO 8601 timestamp",
-  "createdAt": "ISO 8601 timestamp",
+  "endTime": "ISO 8601",
+  "createdAt": "ISO 8601",
   "notes": "string"
 }
-```
 
-Active timer (mtt-active-state.json):
-```json
+// Active timer (mtt-active-state.json)
 {
   "uuid-key": {
     "project": "string",
@@ -85,25 +60,15 @@ Active timer (mtt-active-state.json):
 }
 ```
 
-**Tradeoffs:**
-- No query language (filter in JavaScript)
-- Manual concurrent write safety (simple file locking works for single user)
-- Manual validation (done on server before save)
-- Scales to ~10MB before needing upgrade; path to SQLite exists if needed
+**Tradeoffs:** No query language. Manual validation. Scales to ~10MB; path to SQLite exists if needed.
 
 ---
 
 ### 3. ES6 Singleton State, Not Redux/MobX/Zustand
 
-**Why:** For 2,200 lines of code, Redux-like patterns add bloat:
-- Redux: 15KB library + action types + reducers + middleware (overkill)
-- MobX: Decorators and magic (confusing)
-- Zustand: 2KB but still an extra dependency
-- Context API: Only exists in React (we use vanilla JS)
+**Why:** ~2K lines doesn't need Redux (15KB + ceremony), MobX (magical), Zustand (extra dependency), or Context API (React-only).
 
-ES6 modules give you singleton state for free.
-
-**What:** Single `state.js` exports an object that all modules import
+**What:** Single `state.js` exports an object all modules import and mutate:
 
 ```javascript
 export const state = {
@@ -113,20 +78,15 @@ export const state = {
   timerInterval: null,
   activeChartInstances: []
 };
-```
 
-All modules import and mutate this same object:
-```javascript
+// Used everywhere
 import { state } from "./state.js";
-state.activeTimers[id] = newTimer;  // Works everywhere
+state.activeTimers[id] = newTimer;
 ```
 
-**How it works:** ES6 module imports are cached. First import creates the object once; subsequent imports get the same reference.
+ES6 module caching means first import creates it once; all imports share the same reference.
 
-**Tradeoffs:**
-- No time-travel debugging (don't need it for this scale)
-- No automatic logging middleware (manually use logger.js)
-- Can accidentally mutate state without re-rendering (solution: discipline)
+**Tradeoffs:** No time-travel debugging or middleware. Can accidentally mutate without re-rendering (solution: discipline).
 
 ---
 
@@ -283,4 +243,4 @@ Current code structure enables these paths because state, API, and UI are alread
 
 - [api.md](api.md) - Frontend module API reference
 - [../tests/README.md](../tests/README.md) - Testing guide and patterns
-- [../CONTRIBUTING.md](../CONTRIBUTING.md) - Development workflow
+- [contributing.md](contributing.md) - Development workflow

@@ -584,3 +584,20 @@ flycheck_*.el
 # network security
 /network-security.data
 tests/screenshots/
+tests/screenshots/e2e/01-initial-load.png
+tests/screenshots/e2e/02-collapsible-sections-tested.png
+tests/screenshots/e2e/03-timer-started.png
+tests/screenshots/e2e/04-notes-added.png
+tests/screenshots/e2e/05-timer-paused.png
+tests/screenshots/e2e/06-timer-resumed.png
+tests/screenshots/e2e/07-timer-stopped.png
+tests/screenshots/e2e/08-timer-deleted.png
+tests/screenshots/e2e/09-data-persisted.png
+tests/screenshots/e2e/10-reports-tab.png
+tests/screenshots/e2e/11-responsive-desktop.png
+tests/screenshots/e2e/11-responsive-laptop.png
+tests/screenshots/e2e/11-responsive-mobile.png
+tests/screenshots/e2e/11-responsive-tablet.png
+tests/screenshots/e2e/12-error-handling.png
+tests/screenshots/e2e/13-csv-export.png
+tests/screenshots/e2e/14-final-state.png

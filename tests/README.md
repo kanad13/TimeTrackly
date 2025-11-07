@@ -85,59 +85,9 @@ tests/
 
 ## How to Write Tests
 
-### Backend API Test Pattern
+**Backend tests:** Use Node.js `test()` and `assert()`. Fetch endpoint → check status + response shape. See [test-backend-api.cjs](../tests/e2e/test-backend-api.cjs) for complete examples.
 
-```javascript
-const test = require("node:test");
-const assert = require("node:assert");
-
-test("GET /api/endpoint returns expected data", async () => {
-	const res = await fetch("http://localhost:13331/api/endpoint");
-	const data = await res.json();
-
-	assert.strictEqual(res.status, 200);
-	assert.ok(Array.isArray(data));
-});
-
-test("POST /api/endpoint validates input", async () => {
-	const res = await fetch("http://localhost:13331/api/endpoint", {
-		method: "POST",
-		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify({ invalid: "data" }),
-	});
-
-	assert.strictEqual(res.status, 400);
-});
-```
-
-### E2E UI Test Pattern
-
-```javascript
-const puppeteer = require("puppeteer");
-
-async function testFeature(page) {
-	console.log("📋 Testing: Feature Name");
-
-	// Perform action
-	await page.type("#input-id", "test value");
-	await page.click("#button-id");
-	await delay(1000);
-
-	// Verify result
-	const result = await page.$("#result-element");
-	if (result) {
-		console.log("   ✅ Feature works correctly");
-	} else {
-		throw new Error("Feature failed");
-	}
-
-	// Take screenshot
-	await page.screenshot({
-		path: "tests/screenshots/e2e/feature-test.png",
-		fullPage: true,
-	});
-}
-```
+**E2E tests:** Use Puppeteer. Type input → click button → wait for element → verify DOM state. See [test-ui-complete.cjs](../tests/e2e/test-ui-complete.cjs) for complete examples.
 
 ---
 
@@ -222,24 +172,6 @@ npm start       # Start server
 
 ---
 
-## CI/CD Integration
-
-Tests run automatically on push via GitHub Actions (`.github/workflows/test.yml`).
-
-### What Runs in CI:
-
-1. Install dependencies
-2. Start server
-3. Run backend API tests
-4. Run E2E tests (headless)
-5. Upload screenshots as artifacts
-
-### View Results:
-
-- Check Actions tab in GitHub
-- Download test screenshots from artifacts
-- Review test logs for failures
-
 ---
 
 ## Test Fixtures
@@ -284,85 +216,6 @@ const fixture = JSON.parse(
 
 ---
 
-## Common Test Patterns
-
-### Testing Collapsible Sections
-
-```javascript
-async function testCollapsibleSection(page, headerId, contentId, sectionName) {
-	await page.click(headerId);
-	await delay(500);
-
-	const newHeight = await page.$eval(contentId, (el) => el.offsetHeight);
-	if (newHeight > 0) {
-		console.log(`✅ ${sectionName} toggled successfully`);
-	}
-}
-```
-
-### Testing Timer Lifecycle
-
-```javascript
-async function testTimer(page) {
-	// Start timer
-	await page.type("#topic-input", "Project / Task");
-	await page.click("#start-button");
-	await delay(1000);
-
-	// Verify timer appears
-	const timer = await page.$("[data-timer-id]");
-	assert.ok(timer, "Timer should be created");
-
-	// Stop timer
-	await page.click('[data-action="stop"]');
-	await delay(1000);
-}
-```
-
-### Testing Data Persistence
-
-```javascript
-async function testPersistence(page, browser) {
-	// Create data
-	await page.type("#topic-input", "Test / Task");
-	await page.click("#start-button");
-	await delay(1000);
-
-	// Reload page
-	await page.close();
-	const newPage = await browser.newPage();
-	await newPage.goto("http://localhost:13331");
-	await delay(2000);
-
-	// Verify data persisted
-	const timer = await newPage.$("[data-timer-id]");
-	assert.ok(timer, "Timer should persist");
-
-	return newPage;
-}
-```
-
-### Testing Responsive Design
-
-```javascript
-async function testResponsive(page) {
-	const viewports = [
-		{ name: "Desktop", width: 1920, height: 1080 },
-		{ name: "Tablet", width: 768, height: 1024 },
-		{ name: "Mobile", width: 375, height: 667 },
-	];
-
-	for (const viewport of viewports) {
-		await page.setViewport(viewport);
-		await delay(500);
-		await page.screenshot({
-			path: `tests/screenshots/e2e/${viewport.name.toLowerCase()}.png`,
-		});
-	}
-}
-```
-
----
 
 ## Additional Resources
 
