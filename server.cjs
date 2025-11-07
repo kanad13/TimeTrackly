@@ -283,6 +283,79 @@ const initializeAllFiles = async () => {
 	}
 };
 
+// --- Data Validation Function ---
+/**
+ * Validates that an array contains valid historical entry objects.
+ *
+ * WHY VALIDATION MATTERS:
+ * - Ensures data integrity before persisting to disk
+ * - Prevents corrupted data from frontend bugs
+ * - Provides clear error messages for debugging
+ *
+ * REQUIRED FIELDS:
+ * - project (string): Project name
+ * - task (string): Task description
+ * - totalDurationMs (number): Duration in milliseconds
+ * - durationSeconds (number): Duration in seconds
+ * - endTime (ISO date string): When timer ended
+ * - createdAt (ISO date string): When timer started
+ * - notes (string, optional): User notes
+ *
+ * @param {Array} entries - Array of historical entry objects to validate
+ * @returns {string|null} Error message if invalid, null if valid
+ */
+const validateHistoricalEntries = (entries) => {
+	if (!Array.isArray(entries)) {
+		return "Data must be an array";
+	}
+
+	for (let i = 0; i < entries.length; i++) {
+		const entry = entries[i];
+
+		// Check required fields exist
+		if (!entry.project || typeof entry.project !== "string") {
+			return `Entry ${i}: project must be a non-empty string`;
+		}
+		if (!entry.task || typeof entry.task !== "string") {
+			return `Entry ${i}: task must be a non-empty string`;
+		}
+		if (typeof entry.totalDurationMs !== "number" || entry.totalDurationMs < 0) {
+			return `Entry ${i}: totalDurationMs must be a non-negative number`;
+		}
+		if (typeof entry.durationSeconds !== "number" || entry.durationSeconds < 0) {
+			return `Entry ${i}: durationSeconds must be a non-negative number`;
+		}
+
+		// Validate ISO date strings
+		const endTime = new Date(entry.endTime);
+		if (isNaN(endTime.getTime())) {
+			return `Entry ${i}: endTime must be a valid ISO date string`;
+		}
+		const createdAt = new Date(entry.createdAt);
+		if (isNaN(createdAt.getTime())) {
+			return `Entry ${i}: createdAt must be a valid ISO date string`;
+		}
+
+		// Optional notes field
+		if (entry.notes !== undefined && typeof entry.notes !== "string") {
+			return `Entry ${i}: notes must be a string`;
+		}
+
+		// Sanity check: duration should match time difference
+		const duration = endTime.getTime() - createdAt.getTime();
+		if (Math.abs(duration - entry.totalDurationMs) > 1000) {
+			// Allow 1 second tolerance for rounding
+			log.warn("Duration mismatch in entry", {
+				index: i,
+				calculatedMs: duration,
+				storedMs: entry.totalDurationMs,
+			});
+		}
+	}
+
+	return null; // All validations passed
+};
+
 // --- HTTP Request Handler ---
 const requestHandler = async (req, res) => {
 	try {
@@ -380,10 +453,11 @@ const requestHandler = async (req, res) => {
 				try {
 					const data = await validateJsonBody(req);
 
-					// Basic validation: ensure it's an array
-					if (!Array.isArray(data)) {
+					// Validate data structure and content
+					const validationError = validateHistoricalEntries(data);
+					if (validationError) {
 						res.writeHead(400, { "Content-Type": "application/json" });
-						res.end(JSON.stringify({ message: "Data must be an array" }));
+						res.end(JSON.stringify({ message: validationError }));
 						return;
 					}
 
@@ -430,7 +504,30 @@ const requestHandler = async (req, res) => {
 		// --- Static File Server: Serve JS modules ---
 		if (req.url.startsWith("/js/") && req.url.endsWith(".js")) {
 			try {
-				const filePath = path.join(__dirname, req.url);
+				// SECURITY: Prevent path traversal attacks (../../ sequences)
+				// Extract filename from URL and verify it's in /js/ directory
+				const requestedPath = path.normalize(req.url);
+
+				// Reject if path tries to escape /js/ directory
+				if (!requestedPath.startsWith("/js/") || requestedPath.includes("..")) {
+					log.warn("Rejected path traversal attempt", { url: req.url });
+					res.writeHead(403, { "Content-Type": "application/json" });
+					res.end(JSON.stringify({ message: "Access denied" }));
+					return;
+				}
+
+				const filePath = path.join(__dirname, requestedPath);
+				const resolvedPath = path.resolve(filePath);
+				const allowedDir = path.resolve(__dirname, "js");
+
+				// Double-check: ensure resolved path is within /js/ directory
+				if (!resolvedPath.startsWith(allowedDir)) {
+					log.warn("Rejected path traversal attempt (resolution check)", { url: req.url });
+					res.writeHead(403, { "Content-Type": "application/json" });
+					res.end(JSON.stringify({ message: "Access denied" }));
+					return;
+				}
+
 				const content = await fs.readFile(filePath, "utf8");
 				res.writeHead(200, { "Content-Type": "application/javascript" });
 				res.end(content);

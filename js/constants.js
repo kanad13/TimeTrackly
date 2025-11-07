@@ -40,6 +40,15 @@
  * @module constants
  */
 
+/**
+ * Application-wide constants object
+ *
+ * Centralized configuration values used throughout the application.
+ * All time-related constants are in milliseconds.
+ *
+ * @constant
+ * @type {Object}
+ */
 export const CONSTANTS = {
 	MS_PER_SECOND: 1000,
 	MS_PER_MINUTE: 60000,
@@ -49,6 +58,13 @@ export const CONSTANTS = {
 	REPORT_DAYS_DEFAULT: 7,
 	TIMER_UPDATE_INTERVAL: 1000, // Update every second
 	NOTIFICATION_DURATION: 4000, // 4 seconds
+	NOTIFICATION_FADE_DURATION: 300, // Animation duration in milliseconds
+	STATUS_MESSAGE_DURATION: 3000, // Duration for discarded/error messages
+	STARTUP_NOTIFICATION_DURATION: 2000, // App startup success message
+	TRANSITION_DURATION: 200, // CSS transition duration
+	ANIMATION_DURATION: 300, // CSS animation duration
+	UI_NOTIFICATION_OFFSET: 4, // Top/right offset for notifications (in rem)
+	UI_Z_INDEX_NOTIFICATION: 50, // z-index for notification popups
 };
 
 /**
@@ -66,6 +82,9 @@ export const CONSTANTS = {
  * If more than 10 projects, colors repeat (modulo).
  *
  * IMPACT: Changing colors affects all charts. Choose carefully for accessibility.
+ *
+ * @constant
+ * @type {string[]}
  */
 export const CHART_COLORS = [
 	"#4f46e5",

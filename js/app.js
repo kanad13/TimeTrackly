@@ -58,7 +58,19 @@ import { switchTab } from "./reports.js";
 import { showNotification } from "./utils.js";
 
 /**
- * Initializes the application
+ * Initializes the application and sets up the user interface
+ *
+ * Executes critical initialization sequence:
+ * 1. Initializes DOM element references
+ * 2. Sets up notes modal handlers
+ * 3. Attaches event listeners for buttons and collapsible sections
+ * 4. Loads server data (suggestions, historical entries, active timers)
+ * 5. Renders initial UI state
+ * 6. Starts timer display if there are running timers
+ *
+ * @async
+ * @returns {Promise<void>}
+ * @throws {Error} If fatal initialization error occurs (e.g., cannot load data from server)
  */
 const initializeApp = async () => {
 	try {
@@ -164,7 +176,7 @@ const initializeApp = async () => {
 			startTimerDisplay();
 		}
 
-		showNotification("Application loaded successfully!", "success", 2000);
+		showNotification("Application loaded successfully!", "success", CONSTANTS.STARTUP_NOTIFICATION_DURATION);
 	} catch (error) {
 		console.error("Fatal error during initialization:", error);
 		showNotification(
@@ -176,7 +188,17 @@ const initializeApp = async () => {
 };
 
 /**
- * Sets up lifecycle event handlers
+ * Sets up application lifecycle event handlers
+ *
+ * Registers handlers for:
+ * - visibilitychange: Pauses/resumes timer updates when tab visibility changes
+ * - beforeunload: Warns user about active timers and performs cleanup
+ * - error: Catches and displays global JavaScript errors
+ * - unhandledrejection: Catches and displays unhandled promise rejections
+ *
+ * These handlers ensure proper resource cleanup and prevent data loss.
+ *
+ * @returns {void}
  */
 const setupLifecycleHandlers = () => {
 	// Cleanup on visibility change (pause timer updates when tab is hidden)

@@ -52,7 +52,13 @@ import { CONSTANTS } from "./constants.js";
 
 /**
  * Switches between tracker and reports tabs
+ *
+ * Hides all content views, removes active state from all tabs, displays the
+ * selected tab's content, and marks the tab button as active. If switching
+ * to reports tab, automatically triggers report rendering.
+ *
  * @param {string} targetTab - Tab name ('tracker' or 'reports')
+ * @returns {void}
  */
 export const switchTab = (targetTab) => {
 	document
@@ -67,7 +73,16 @@ export const switchTab = (targetTab) => {
 };
 
 /**
- * Renders the reports view with charts
+ * Renders the reports view with Chart.js visualizations
+ *
+ * Processes historical time entries and generates two charts:
+ * 1. Project Time Distribution (Doughnut Chart): Shows percentage of time per project
+ * 2. Daily Time Logged (Bar Chart): Shows hours logged each day for last 7 days
+ *
+ * Destroys existing chart instances before creating new ones to prevent memory leaks.
+ * Handles loading states, errors, and empty data scenarios.
+ *
+ * @returns {void}
  */
 export const renderReportsView = () => {
 	const reportsLoading = document.getElementById("reports-loading");

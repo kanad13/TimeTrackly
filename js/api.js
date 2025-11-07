@@ -48,8 +48,15 @@ import { state } from "./state.js";
 import { showNotification } from "./utils.js";
 
 /**
- * Loads historical time entries from server
- * @throws {Error} If server is unreachable or returns error
+ * Loads historical time entries from the server
+ *
+ * Fetches all completed time entries from /api/data endpoint and populates
+ * state.historicalEntries. Validates and converts date strings to Date objects.
+ * This is a fatal operation - the app cannot function without historical data.
+ *
+ * @async
+ * @returns {Promise<void>}
+ * @throws {Error} If server is unreachable, returns error status, or data is invalid
  */
 export const loadDataFromServer = async () => {
 	try {
@@ -86,8 +93,14 @@ export const loadDataFromServer = async () => {
 };
 
 /**
- * Saves historical time entries to server
- * @throws {Error} If save operation fails
+ * Saves historical time entries to the server
+ *
+ * Posts all historical entries to /api/data endpoint. This persists completed
+ * timer data to disk. Called after stopping timers.
+ *
+ * @async
+ * @returns {Promise<void>}
+ * @throws {Error} If server is unreachable, returns error status, or save fails
  */
 export const saveDataToServer = async () => {
 	try {
@@ -107,7 +120,14 @@ export const saveDataToServer = async () => {
 };
 
 /**
- * Loads active timer state from server (for session restoration)
+ * Loads active timer state from the server for session restoration
+ *
+ * Fetches running/paused timers from /api/active-state endpoint and populates
+ * state.activeTimers. Converts date strings to Date objects. This is a
+ * recoverable operation - if it fails, the app starts with empty active timers.
+ *
+ * @async
+ * @returns {Promise<void>}
  */
 export const loadActiveStateFromServer = async () => {
 	try {
@@ -137,9 +157,15 @@ export const loadActiveStateFromServer = async () => {
 };
 
 /**
- * Saves current active timer state to server
- * Updates UI counter and visibility after save
- * @throws {Error} If save operation fails
+ * Saves current active timer state to the server
+ *
+ * Posts all running/paused timers to /api/active-state endpoint. Converts
+ * Date objects to ISO strings for serialization. Called after any timer
+ * state change (start, pause, resume, delete).
+ *
+ * @async
+ * @returns {Promise<void>}
+ * @throws {Error} If server is unreachable, returns error status, or save fails
  */
 export const saveActiveStateToServer = async () => {
 	const serializableTimers = {};
@@ -170,7 +196,15 @@ export const saveActiveStateToServer = async () => {
 };
 
 /**
- * Loads task/project suggestions from server
+ * Loads task/project suggestions from the server
+ *
+ * Fetches predefined activity suggestions from /api/suggestions endpoint and
+ * populates state.predefinedSuggestions. These are combined with recent activities
+ * for the input autocomplete. This is a recoverable operation - if it fails,
+ * autocomplete still works with recent activities only.
+ *
+ * @async
+ * @returns {Promise<void>}
  */
 export const loadSuggestionsFromServer = async () => {
 	try {

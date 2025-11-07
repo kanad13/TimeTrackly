@@ -24,26 +24,45 @@
 import { CONSTANTS, CHART_COLORS } from "./constants.js";
 
 /**
- * Generates a unique identifier using the Web Crypto API
+ * Generates a unique identifier using the Web Crypto API with fallback
  *
  * WHY crypto.randomUUID():
- * - Standards-based (supported in all modern browsers)
+ * - Standards-based (supported in modern browsers: Chrome 92+, Firefox 76+, Safari 15.1+)
  * - Cryptographically secure (no collisions in practice)
- * - No dependencies needed
  * - Returns RFC4122 v4 UUID format
  *
- * ALTERNATIVE: Could use Date.now() + Math.random(), but less robust.
+ * BROWSER COMPATIBILITY:
+ * - Uses crypto.randomUUID() if available
+ * - Falls back to Math.random() based UUID v4 implementation for older browsers
+ * - Fallback is less secure but sufficient for single-user app
  *
  * IMPACT: Timer IDs must be unique. Collisions would cause data corruption.
  *
  * @returns {string} UUID v4 string
  */
-export const generateUUID = () => crypto.randomUUID();
+export const generateUUID = () => {
+	// Use native crypto.randomUUID if available (modern browsers)
+	if (typeof crypto !== "undefined" && crypto.randomUUID) {
+		return crypto.randomUUID();
+	}
+
+	// Fallback for older browsers: generate UUID v4-like string
+	// Format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
+	return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+		const r = (Math.random() * 16) | 0;
+		const v = c === "x" ? r : (r & 0x3) | 0x8;
+		return v.toString(16);
+	});
+};
 
 /**
  * Formats a duration in seconds to HH:MM:SS format
+ *
+ * Always pads hours, minutes, and seconds to 2 digits with leading zeros.
+ * Example: 3661 seconds becomes "01:01:01"
+ *
  * @param {number} seconds - Duration in seconds
- * @returns {string} Formatted duration string (HH:MM:SS)
+ * @returns {string} Formatted duration string in HH:MM:SS format
  */
 export const formatDuration = (seconds) => {
 	const h = Math.floor(
@@ -93,6 +112,10 @@ export const sanitizeInput = (str) => {
 
 /**
  * Creates a unique key for identifying running tasks
+ *
+ * Converts project and task names to lowercase for case-insensitive comparison.
+ * Used to prevent duplicate timers (e.g., "Project A / Task 1" vs "project a / task 1").
+ *
  * @param {string} project - Project name
  * @param {string} task - Task name
  * @returns {string} Lowercase key in format "project:task"
@@ -102,8 +125,13 @@ export const getRunningTasksKey = (project, task) =>
 
 /**
  * Generates an array of distinct colors for chart visualization
+ *
+ * Cycles through the predefined CHART_COLORS palette. If more colors are
+ * needed than available, colors repeat (modulo operation). Colors are
+ * assigned deterministically - same count always produces same colors.
+ *
  * @param {number} count - Number of colors needed
- * @returns {string[]} Array of hex color codes
+ * @returns {string[]} Array of hex color codes from CHART_COLORS
  */
 export const getDistinctColors = (count) => {
 	const result = [];
@@ -160,7 +188,7 @@ export const showNotification = (
 	if (duration > 0) {
 		setTimeout(() => {
 			notification.style.opacity = "0";
-			setTimeout(() => notification.remove(), 300);
+			setTimeout(() => notification.remove(), CONSTANTS.NOTIFICATION_FADE_DURATION);
 		}, duration);
 	}
 };

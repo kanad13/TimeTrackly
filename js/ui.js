@@ -79,7 +79,12 @@ import { CONSTANTS } from "./constants.js";
 let domElements = null;
 
 /**
- * Initializes DOM element references
+ * Initializes DOM element references for use throughout the UI module
+ *
+ * Caches references to frequently accessed DOM elements in the domElements object.
+ * Must be called during app initialization before any UI operations.
+ *
+ * @returns {void}
  */
 export const initDOMElements = () => {
 	domElements = {
@@ -104,6 +109,12 @@ export const initDOMElements = () => {
 
 /**
  * Populates the datalist with predefined and recent activity suggestions
+ *
+ * Combines predefined suggestions from the server with recent activities from
+ * historical entries to provide autocomplete options. Eliminates duplicates
+ * and formats entries as "Project / Task".
+ *
+ * @returns {void}
  */
 export const populateSuggestions = () => {
 	if (!domElements) return;
@@ -135,7 +146,13 @@ export const populateSuggestions = () => {
 let currentNotesEditingId = null;
 
 /**
- * Opens the notes modal for a specific timer
+ * Opens the notes modal dialog for editing a specific timer's notes
+ *
+ * Displays a modal dialog with the current notes for the timer. Updates the
+ * modal title with the task name and focuses the textarea for immediate editing.
+ *
+ * @param {string} activityId - UUID of the timer to edit notes for
+ * @returns {void}
  */
 export const openNotesModal = (activityId) => {
 	if (!domElements) return;
@@ -154,7 +171,12 @@ export const openNotesModal = (activityId) => {
 };
 
 /**
- * Closes the notes modal
+ * Closes the notes modal dialog without saving changes
+ *
+ * Hides the modal backdrop and resets the current editing state.
+ * Any unsaved changes are discarded.
+ *
+ * @returns {void}
  */
 export const closeNotesModal = () => {
 	if (!domElements) return;
@@ -165,7 +187,13 @@ export const closeNotesModal = () => {
 };
 
 /**
- * Saves notes from the modal
+ * Saves notes from the modal to the timer state
+ *
+ * Updates the timer's notes field and persists to server. If save fails,
+ * rolls back changes and displays error notification.
+ *
+ * @async
+ * @returns {Promise<void>}
  */
 export const saveNotesModal = async () => {
 	if (!currentNotesEditingId || !domElements) return;
@@ -193,7 +221,12 @@ export const saveNotesModal = async () => {
 };
 
 /**
- * Initialize modal event listeners
+ * Initializes event listeners for the notes modal dialog
+ *
+ * Sets up click handlers for close/cancel/save buttons, backdrop clicks,
+ * and ESC key press for closing the modal. Must be called during app initialization.
+ *
+ * @returns {void}
  */
 export const initNotesModal = () => {
 	if (!domElements) return;
@@ -224,6 +257,13 @@ export const initNotesModal = () => {
 
 /**
  * Renders all active timers grouped by project with collapsible sections
+ *
+ * Creates a hierarchical display of timers organized by project. Each project
+ * has a collapsible header with task count. Each task shows status, duration,
+ * and action buttons (pause/resume, stop, delete, notes). Updates the active
+ * timer count badge.
+ *
+ * @returns {void}
  */
 export const renderActiveTimers = () => {
 	if (!domElements) return;
@@ -466,6 +506,11 @@ export const updateTimerDisplay = () => {
 
 /**
  * Starts the timer display update loop
+ *
+ * Creates an interval that updates all timer displays every second. Only creates
+ * a new interval if one doesn't already exist (prevents duplicate intervals).
+ *
+ * @returns {void}
  */
 export const startTimerDisplay = () => {
 	if (!state.timerInterval) {
@@ -478,7 +523,15 @@ export const startTimerDisplay = () => {
 
 /**
  * Starts a new timer for a project/task
- * Validates input, checks for duplicates, and saves state
+ *
+ * Validates user input, checks for duplicate running timers (case-insensitive),
+ * creates a new timer in activeTimers state, saves to server, and updates UI.
+ * Prevents multiple timers for the same project/task combination.
+ *
+ * Input format: "Project / Task" or just "Project" (defaults to "Task")
+ *
+ * @async
+ * @returns {Promise<void>}
  */
 export const startNewTimer = async () => {
 	if (!domElements) return;
@@ -534,7 +587,14 @@ export const startNewTimer = async () => {
 
 /**
  * Toggles a timer between paused and running states
+ *
+ * If running: Pauses the timer, accumulates elapsed time, and clears startTime.
+ * If paused: Resumes the timer, sets new startTime, and keeps accumulated time.
+ * Rolls back changes if server save fails.
+ *
+ * @async
  * @param {string} id - UUID of the timer to toggle
+ * @returns {Promise<void>}
  */
 export const toggleTimer = async (id) => {
 	const timer = state.activeTimers[id];
@@ -570,19 +630,48 @@ export const toggleTimer = async (id) => {
 };
 /**
  * Deletes a timer without saving it to history
+ *
+ * ERROR HANDLING & ROLLBACK:
+ * If server save fails, we restore the timer to state and show error message.
+ * This prevents silent data loss if the network is down.
+ *
  * @param {string} id - UUID of the timer to delete
  */
 export const deleteTimer = async (id) => {
 	if (!state.activeTimers[id]) return;
-	delete state.activeTimers[id];
-	await saveActiveStateToServer();
-	renderActiveTimers();
+
+	// Store backup in case we need to rollback
+	const timerBackup = state.activeTimers[id];
+
+	try {
+		delete state.activeTimers[id];
+		await saveActiveStateToServer();
+		renderActiveTimers();
+	} catch (error) {
+		// Rollback: restore timer if save failed
+		state.activeTimers[id] = timerBackup;
+		renderActiveTimers();
+
+		// Show error to user
+		const msg = `Failed to delete timer. Please try again.`;
+		console.error("Delete timer error:", error);
+		if (domElements) {
+			domElements.errorMessage.textContent = msg;
+			setTimeout(() => (domElements.errorMessage.textContent = ""), CONSTANTS.NOTIFICATION_DURATION);
+		}
+	}
 };
 
 /**
  * Stops a timer and saves it to historical data
- * Discards timers with zero duration
+ *
+ * Calculates final duration, creates a historical entry with notes, saves to
+ * server, and removes from active timers. Automatically discards timers with
+ * zero duration. Updates UI and adds the task to suggestions.
+ *
+ * @async
  * @param {string} id - UUID of the timer to stop
+ * @returns {Promise<void>}
  */
 export const stopTimer = async (id) => {
 	if (!domElements) return;
@@ -595,7 +684,7 @@ export const stopTimer = async (id) => {
 		deleteTimer(id);
 		domElements.errorMessage.textContent =
 			"Task of zero duration was discarded.";
-		setTimeout(() => (domElements.errorMessage.textContent = ""), 3000);
+		setTimeout(() => (domElements.errorMessage.textContent = ""), CONSTANTS.STATUS_MESSAGE_DURATION);
 		return;
 	}
 
@@ -626,14 +715,19 @@ export const stopTimer = async (id) => {
 		activity.task
 	} (${formatDuration(newEntry.durationSeconds)})`;
 	domElements.activeTimersList.insertAdjacentElement("afterend", tempStatus);
-	setTimeout(() => tempStatus.remove(), 4000);
+	setTimeout(() => tempStatus.remove(), CONSTANTS.NOTIFICATION_DURATION);
 
 	populateSuggestions();
 };
 
 /**
  * Exports all historical data as a CSV file
- * Includes computed duration in minutes
+ *
+ * Generates a CSV file with all historical time entries including project, task,
+ * endTime, duration (seconds and minutes), totalDurationMs, and notes. Properly
+ * escapes CSV special characters. Filename includes current date.
+ *
+ * @returns {void}
  */
 export const exportData = () => {
 	if (!domElements) return;

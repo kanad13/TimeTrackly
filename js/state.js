@@ -41,7 +41,19 @@
  */
 
 /**
- * Application state (singleton across all modules)
+ * Application state object (singleton across all modules)
+ *
+ * This object is shared across all modules via ES6 module imports.
+ * All modules that import state.js receive the same instance.
+ *
+ * @typedef {Object} ApplicationState
+ * @property {Array<Object>} historicalEntries - Completed time entries from server
+ * @property {Array<string>} predefinedSuggestions - Task/project suggestions from server
+ * @property {Object<string, TimerObject>} activeTimers - Map of timer IDs to timer objects
+ * @property {number|null} timerInterval - Reference to setInterval for cleanup
+ * @property {Array<Chart>} activeChartInstances - Chart.js instances for cleanup
+ *
+ * @type {ApplicationState}
  */
 export const state = {
 	historicalEntries: [],
@@ -53,10 +65,14 @@ export const state = {
 
 /**
  * Calculates total elapsed milliseconds for a timer including paused time
- * @param {Object} timer - Timer object
- * @param {number} timer.accumulatedMs - Milliseconds accumulated while paused
+ *
+ * For running timers: Returns accumulated time + time since last start
+ * For paused timers: Returns only accumulated time (startTime is null)
+ *
+ * @param {Object} timer - Timer object from state.activeTimers
+ * @param {number} timer.accumulatedMs - Milliseconds accumulated during previous runs
  * @param {boolean} timer.isPaused - Whether timer is currently paused
- * @param {Date|null} timer.startTime - When timer was last started
+ * @param {Date|null} timer.startTime - When timer was last started (null if paused)
  * @returns {number} Total elapsed milliseconds
  */
 export const calculateElapsedMs = (timer) => {
@@ -68,7 +84,13 @@ export const calculateElapsedMs = (timer) => {
 };
 
 /**
- * Clears the timer interval if it exists
+ * Clears the timer display update interval if one exists
+ *
+ * Called when tab becomes hidden, all timers are paused, or on page unload.
+ * Prevents unnecessary CPU usage when timer updates aren't visible or needed.
+ * Sets state.timerInterval to null after clearing.
+ *
+ * @returns {void}
  */
 export const clearTimerInterval = () => {
 	if (state.timerInterval) {
@@ -79,7 +101,11 @@ export const clearTimerInterval = () => {
 
 /**
  * Checks if any timers are currently running (not paused)
- * @returns {boolean} True if at least one timer is running
+ *
+ * Used to determine whether to start the timer display update interval.
+ * Paused timers don't count as "running" since their display doesn't change.
+ *
+ * @returns {boolean} True if at least one timer is running (isPaused = false)
  */
 export const hasRunningTimers = () => {
 	return Object.values(state.activeTimers).some((t) => !t.isPaused);
