@@ -625,6 +625,7 @@ export const toggleTimer = async (id) => {
 		timer.isPaused = previousState.isPaused;
 		timer.startTime = previousState.startTime;
 		timer.accumulatedMs = previousState.accumulatedMs;
+		renderActiveTimers(); // Update UI to reflect rollback
 		showNotification("Failed to toggle timer. Please try again.", "error");
 	}
 };
@@ -690,7 +691,6 @@ export const stopTimer = async (id) => {
 
 	const endTime = new Date();
 	const startTime = new Date(endTime.getTime() - finalDurationMs);
-	delete state.activeTimers[id];
 
 	const newEntry = {
 		project: activity.project,
@@ -702,22 +702,35 @@ export const stopTimer = async (id) => {
 		notes: activity.notes || "",
 	};
 
-	state.historicalEntries.push(newEntry);
+	try {
+		// Remove from active timers and add to history
+		delete state.activeTimers[id];
+		state.historicalEntries.push(newEntry);
 
-	await saveActiveStateToServer();
-	await saveDataToServer();
+		// Persist both changes to server
+		await saveActiveStateToServer();
+		await saveDataToServer();
 
-	renderActiveTimers();
+		renderActiveTimers();
 
-	const tempStatus = document.createElement("p");
-	tempStatus.className = "text-center text-sm text-green-600 mt-2";
-	tempStatus.textContent = `Saved ${activity.project} / ${
-		activity.task
-	} (${formatDuration(newEntry.durationSeconds)})`;
-	domElements.activeTimersList.insertAdjacentElement("afterend", tempStatus);
-	setTimeout(() => tempStatus.remove(), CONSTANTS.NOTIFICATION_DURATION);
+		// Show success message
+		const tempStatus = document.createElement("p");
+		tempStatus.className = "text-center text-sm text-green-600 mt-2";
+		tempStatus.textContent = `Saved ${activity.project} / ${
+			activity.task
+		} (${formatDuration(newEntry.durationSeconds)})`;
+		domElements.activeTimersList.insertAdjacentElement("afterend", tempStatus);
+		setTimeout(() => tempStatus.remove(), CONSTANTS.NOTIFICATION_DURATION);
 
-	populateSuggestions();
+		populateSuggestions();
+	} catch (error) {
+		// Rollback: restore timer to active state and remove from history
+		state.activeTimers[id] = activity;
+		state.historicalEntries.pop(); // Remove the entry we just added
+		renderActiveTimers();
+		console.error("Error stopping timer:", error);
+		showNotification("Failed to save timer. Please try again.", "error");
+	}
 };
 
 /**
