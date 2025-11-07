@@ -257,14 +257,6 @@ export const renderActiveTimers = () => {
 			taskNameSpan.className = "task-name flex-1 text-sm font-medium text-gray-800 truncate";
 			taskNameSpan.textContent = activity.task;
 
-			// Notes badge (only show if notes exist)
-			let notesBadgeSpan = null;
-			if (activity.notes && activity.notes.trim()) {
-				notesBadgeSpan = document.createElement("span");
-				notesBadgeSpan.className = "notes-badge flex-shrink-0 text-lg text-gray-400 opacity-60 group-hover:opacity-100 transition-opacity";
-				notesBadgeSpan.textContent = "📝";
-				notesBadgeSpan.setAttribute("title", "Click to view notes");
-			}
 
 			// Duration display (right-aligned)
 			const durationSpan = document.createElement("span");
@@ -278,30 +270,28 @@ export const renderActiveTimers = () => {
 			const actionButtons = document.createElement("div");
 			actionButtons.className = "action-buttons flex items-center gap-2 flex-shrink-0";
 			actionButtons.innerHTML = `
-				<button data-action="${toggleAction}" class="${toggleClass} text-white text-xs px-2.5 py-1.5 rounded transition duration-150 shadow-sm">${toggleLabel}</button>
+				<button data-action="${toggleAction}" class="${toggleClass} text-white text-xs px-2.5 py-1.5 rounded transition duration-150 shadow-sm min-w-16">${toggleLabel}</button>
 				<button data-action="stop" class="bg-red-500 hover:bg-red-600 text-white text-xs px-2.5 py-1.5 rounded transition duration-150 shadow-sm">Stop</button>
 				<button data-action="delete" class="bg-gray-400 hover:bg-gray-500 text-white text-xs px-2.5 py-1.5 rounded transition duration-150 shadow-sm">Delete</button>
+				<button data-action="notes" class="bg-indigo-500 hover:bg-indigo-600 text-white text-xs px-2.5 py-1.5 rounded transition duration-150 shadow-sm">Notes</button>
 			`;
 
 			// Build row
 			row.appendChild(statusIndicator);
 			row.appendChild(taskNameSpan);
-			if (notesBadgeSpan) {
-				row.appendChild(notesBadgeSpan);
-			}
 			row.appendChild(durationSpan);
 			row.appendChild(actionButtons);
 
 			// STEP 2: Create expandable notes section
 			const notesContainer = document.createElement("div");
 			notesContainer.id = `notes-container-${activity.id}`;
-			notesContainer.className = "task-notes-container ml-6 mt-2 pt-2 pb-2 bg-gray-50 rounded px-3 transition-all duration-200";
+			notesContainer.className = "task-notes-container ml-4 mt-1 py-1 bg-gray-50 rounded px-2 transition-all duration-200 hidden";
 
 			const notesTextarea = document.createElement("textarea");
 			notesTextarea.id = `notes-${activity.id}`;
-			notesTextarea.placeholder = "Add notes or comments...";
-			notesTextarea.className = "w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none material-textarea";
-			notesTextarea.rows = "2";
+			notesTextarea.placeholder = "Add notes...";
+			notesTextarea.className = "w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none material-textarea";
+			notesTextarea.rows = "1";
 			notesTextarea.value = activity.notes || "";
 
 			notesContainer.appendChild(notesTextarea);
@@ -335,6 +325,17 @@ export const renderActiveTimers = () => {
 				});
 			}
 
+			const notesButton = row.querySelector('[data-action="notes"]');
+			if (notesButton) {
+				notesButton.addEventListener("click", (e) => {
+					e.stopPropagation();
+					notesContainer.classList.toggle("hidden");
+					if (!notesContainer.classList.contains("hidden")) {
+						notesTextarea.focus();
+					}
+				});
+			}
+
 			// Notes textarea change handler
 			notesTextarea.addEventListener("blur", async () => {
 				const newNotes = notesTextarea.value;
@@ -355,13 +356,6 @@ export const renderActiveTimers = () => {
 				}
 			});
 
-			// Notes focus when clicking badge (notes now visible by default)
-			if (notesBadgeSpan) {
-				notesBadgeSpan.addEventListener("click", (e) => {
-					e.stopPropagation();
-					notesTextarea.focus();
-				});
-			}
 
 			taskList.appendChild(rowContainer);
 		});
