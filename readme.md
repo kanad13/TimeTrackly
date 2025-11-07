@@ -18,11 +18,11 @@ Existing time trackers require:
 
 TimeTrackly gives you:
 
-- ✅ **100% Privacy** – Your data stays on your computer, always
-- ✅ **No Setup Friction** – Start tracking in 30 seconds (literally)
-- ✅ **Always Available** – Works offline; no internet required
-- ✅ **You Own Your Data** – Human-readable JSON files; export anytime
-- ✅ **Zero Dependencies** – Just Node.js, nothing else (smaller attack surface, no supply chain risk)
+- ✅ **100% Privacy** - Your data stays on your computer, always
+- ✅ **No Setup Friction** - Start tracking in 30 seconds (literally)
+- ✅ **Always Available** - Works offline; no internet required
+- ✅ **You Own Your Data** - Human-readable JSON files; export anytime
+- ✅ **Zero Dependencies** - Just Node.js, nothing else (smaller attack surface, no supply chain risk)
 
 ## Features at a Glance
 
@@ -50,10 +50,10 @@ _Visualize your time distribution across projects and daily activity_
 
 ## Perfect For
 
-- 👨‍💻 **Freelancers** – Track billable hours without syncing to anyone else's server
-- 🏢 **Privacy-Conscious Teams** – Each team member runs locally; you control the data
-- 🚀 **Developers & Makers** – Minimal dependencies, hackable architecture, own-your-data ethos
-- 📊 **Anyone Who Wants to Own Their Data** – No vendor lock-in, data export is one click
+- 👨‍💻 **Freelancers** - Track billable hours without syncing to anyone else's server
+- 🏢 **Privacy-Conscious Teams** - Each team member runs locally; you control the data
+- 🚀 **Developers & Makers** - Minimal dependencies, hackable architecture, own-your-data ethos
+- 📊 **Anyone Who Wants to Own Their Data** - No vendor lock-in, data export is one click
 
 ## 2. How to Use the Application
 

@@ -5,6 +5,7 @@
 
 ![UI Initial Load](../assets/010-ui_initial_load.png)
 _The clean, Material Design-inspired interface after setup_
+![UI Initial Load](/assets/010-ui_initial_load.png)
 
 ## 1. Prerequisites
 
@@ -132,10 +133,10 @@ Optionally, run the test suite:
 npm test
 ```
 
-For detailed testing information, see `tests/README.md`.
+For detailed testing information, see [Tests](/tests/README.md).
 
 ## 8. Using the Application
 
 Once running, you can track time across multiple projects simultaneously:
 
-- ![UI Screenshot](../assets/010-ui_initial_load.png)
+- ![UI Screenshot](/assets/010-ui_initial_load.png)
