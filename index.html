@@ -38,10 +38,12 @@
 		All sections have smooth animations with rotating chevron icons.
 
 		NOTES FEATURE:
-		Each timer includes a textarea for adding detailed notes/comments:
-		- Notes auto-save on blur (when clicking away)
-		- Notes persist when stopping timers
-		- Notes included in CSV exports
+		Each timer includes a Notes button that opens a floating modal dialog:
+		- Click Notes button on any timer row
+		- Modal displays "Notes for <Task Name>"
+		- Explicit Save button required (or cancel/ESC to discard)
+		- Close with: Save button, Cancel, ESC key, or click backdrop
+		- Notes persist when saved, included in CSV exports
 		- Empty notes stored as empty strings
 
 		EXTERNAL DEPENDENCIES (CDN):
@@ -340,6 +342,154 @@
 		color: #4F46E5;
 		transform: scale(1.15);
 	}
+
+	/* Modal Styling */
+	.modal-backdrop {
+		display: none;
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background-color: rgba(0, 0, 0, 0.5);
+		z-index: 40;
+		animation: fadeIn 0.15s ease-in;
+	}
+
+	.modal-backdrop.active {
+		display: block;
+	}
+
+	.modal-dialog {
+		display: none;
+		position: fixed;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%) scale(0.95);
+		background: white;
+		border-radius: 12px;
+		box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+		z-index: 50;
+		max-width: 500px;
+		width: 90%;
+		max-height: 70vh;
+		flex-direction: column;
+		animation: slideUp 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+	}
+
+	.modal-dialog.active {
+		display: flex;
+	}
+
+	@keyframes slideUp {
+		from {
+			opacity: 0;
+			transform: translate(-50%, -45%) scale(0.95);
+		}
+		to {
+			opacity: 1;
+			transform: translate(-50%, -50%) scale(1);
+		}
+	}
+
+	.modal-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 20px;
+		border-bottom: 1px solid #E5E7EB;
+		flex-shrink: 0;
+	}
+
+	.modal-title {
+		font-size: 18px;
+		font-weight: 600;
+		color: #202124;
+		margin: 0;
+	}
+
+	.modal-close-btn {
+		background: none;
+		border: none;
+		color: #6B7280;
+		cursor: pointer;
+		font-size: 24px;
+		padding: 0;
+		width: 32px;
+		height: 32px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 6px;
+		transition: all 0.2s ease;
+	}
+
+	.modal-close-btn:hover {
+		background-color: #F3F4F6;
+		color: #202124;
+	}
+
+	.modal-body {
+		padding: 20px;
+		overflow-y: auto;
+		flex: 1;
+	}
+
+	.modal-body textarea {
+		width: 100%;
+		padding: 12px;
+		border: 1px solid #D1D5DB;
+		border-radius: 8px;
+		font-family: inherit;
+		font-size: 14px;
+		resize: vertical;
+		min-height: 150px;
+		transition: all 0.2s ease;
+	}
+
+	.modal-body textarea:focus {
+		outline: none;
+		border-color: #4285F4;
+		box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
+	}
+
+	.modal-footer {
+		padding: 16px 20px;
+		border-top: 1px solid #E5E7EB;
+		display: flex;
+		justify-content: flex-end;
+		gap: 8px;
+		flex-shrink: 0;
+	}
+
+	.modal-footer-btn {
+		padding: 8px 16px;
+		border-radius: 6px;
+		border: none;
+		cursor: pointer;
+		font-size: 14px;
+		font-weight: 500;
+		transition: all 0.2s ease;
+	}
+
+	.modal-footer-btn.primary {
+		background-color: #4285F4;
+		color: white;
+	}
+
+	.modal-footer-btn.primary:hover {
+		background-color: #357ABD;
+		box-shadow: 0 4px 8px rgba(66, 133, 244, 0.2);
+	}
+
+	.modal-footer-btn.secondary {
+		background-color: #F3F4F6;
+		color: #202124;
+	}
+
+	.modal-footer-btn.secondary:hover {
+		background-color: #E5E7EB;
+	}
 	</style>
 </head>
 
@@ -464,6 +614,24 @@
 
 		<!-- Status and ID Display -->
 		<p class="text-sm text-center text-gray-400 mt-6" id="user-id-display">User ID: Loading...</p>
+	</div>
+
+	<!-- Notes Modal -->
+	<div id="notes-modal-backdrop" class="modal-backdrop"></div>
+	<div id="notes-modal" class="modal-dialog">
+		<div class="modal-header">
+			<h2 id="notes-modal-title" class="modal-title">Notes</h2>
+			<button id="notes-modal-close" class="modal-close-btn" aria-label="Close modal">
+				<span class="material-icons">close</span>
+			</button>
+		</div>
+		<div class="modal-body">
+			<textarea id="notes-modal-textarea" placeholder="Add notes..."></textarea>
+		</div>
+		<div class="modal-footer">
+			<button id="notes-modal-cancel" class="modal-footer-btn secondary">Cancel</button>
+			<button id="notes-modal-save" class="modal-footer-btn primary">Save</button>
+		</div>
 	</div>
 
 	<!--

@@ -47,6 +47,7 @@ import {
 } from "./api.js";
 import {
 	initDOMElements,
+	initNotesModal,
 	populateSuggestions,
 	renderActiveTimers,
 	startTimerDisplay,
@@ -63,6 +64,9 @@ const initializeApp = async () => {
 	try {
 		// Initialize DOM references
 		initDOMElements();
+
+		// Initialize notes modal handlers
+		initNotesModal();
 
 		// Set status
 		document.getElementById("user-id-display").textContent =

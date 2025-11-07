@@ -5,7 +5,7 @@
     "startTime": null,
     "accumulatedMs": 11516,
     "isPaused": true,
-    "notes": "cvcxvcxvcxv"
+    "notes": "change"
   },
   "76f48e7d-4aca-4a7d-b644-0908d7f0ba2d": {
     "project": "Project A",
@@ -13,7 +13,7 @@
     "startTime": "2025-11-06T14:24:35.511Z",
     "accumulatedMs": 0,
     "isPaused": false,
-    "notes": ""
+    "notes": "some notes"
   },
   "27d60787-0811-423c-9bbe-eaa2d575c10d": {
     "project": "Project B",
@@ -21,6 +21,6 @@
     "startTime": "2025-11-06T14:24:38.108Z",
     "accumulatedMs": 0,
     "isPaused": false,
-    "notes": ""
+    "notes": "where is my notes button? "
   }
 }

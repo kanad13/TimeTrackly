@@ -92,6 +92,13 @@ export const initDOMElements = () => {
 		userIdDisplay: document.getElementById("user-id-display"),
 		errorMessage: document.getElementById("error-message"),
 		suggestionsDatalist: document.getElementById("activity-suggestions"),
+		notesModalBackdrop: document.getElementById("notes-modal-backdrop"),
+		notesModal: document.getElementById("notes-modal"),
+		notesModalTitle: document.getElementById("notes-modal-title"),
+		notesModalTextarea: document.getElementById("notes-modal-textarea"),
+		notesModalClose: document.getElementById("notes-modal-close"),
+		notesModalCancel: document.getElementById("notes-modal-cancel"),
+		notesModalSave: document.getElementById("notes-modal-save"),
 	};
 };
 
@@ -119,6 +126,99 @@ export const populateSuggestions = () => {
 		const option = document.createElement("option");
 		option.value = activity;
 		domElements.suggestionsDatalist.appendChild(option);
+	});
+};
+
+/**
+ * Modal state for tracking which timer's notes are being edited
+ */
+let currentNotesEditingId = null;
+
+/**
+ * Opens the notes modal for a specific timer
+ */
+export const openNotesModal = (activityId) => {
+	if (!domElements) return;
+
+	currentNotesEditingId = activityId;
+	const activity = state.activeTimers[activityId];
+
+	if (!activity) return;
+
+	// Set modal title with task name
+	domElements.notesModalTitle.textContent = `Notes for ${activity.task}`;
+	domElements.notesModalTextarea.value = activity.notes || "";
+	domElements.notesModal.classList.add("active");
+	domElements.notesModalBackdrop.classList.add("active");
+	domElements.notesModalTextarea.focus();
+};
+
+/**
+ * Closes the notes modal
+ */
+export const closeNotesModal = () => {
+	if (!domElements) return;
+
+	domElements.notesModal.classList.remove("active");
+	domElements.notesModalBackdrop.classList.remove("active");
+	currentNotesEditingId = null;
+};
+
+/**
+ * Saves notes from the modal
+ */
+export const saveNotesModal = async () => {
+	if (!currentNotesEditingId || !domElements) return;
+
+	const activity = state.activeTimers[currentNotesEditingId];
+	if (!activity) return;
+
+	const newNotes = domElements.notesModalTextarea.value;
+	const previousNotes = activity.notes;
+
+	activity.notes = newNotes;
+
+	try {
+		await saveActiveStateToServer();
+		closeNotesModal();
+	} catch (error) {
+		console.error("Error saving notes:", error);
+		activity.notes = previousNotes;
+		domElements.notesModalTextarea.value = previousNotes;
+		showNotification(
+			"Failed to save notes. Please try again.",
+			"error"
+		);
+	}
+};
+
+/**
+ * Initialize modal event listeners
+ */
+export const initNotesModal = () => {
+	if (!domElements) return;
+
+	// Close button
+	domElements.notesModalClose?.addEventListener("click", closeNotesModal);
+
+	// Cancel button
+	domElements.notesModalCancel?.addEventListener("click", closeNotesModal);
+
+	// Save button
+	domElements.notesModalSave?.addEventListener("click", saveNotesModal);
+
+	// Click outside (backdrop) to close
+	domElements.notesModalBackdrop?.addEventListener("click", (e) => {
+		if (e.target === domElements.notesModalBackdrop) {
+			closeNotesModal();
+		}
+	});
+
+	// ESC key to close
+	document.addEventListener("keydown", (e) => {
+		if (e.key === "Escape" && domElements.notesModal.classList.contains("active")) {
+			closeNotesModal();
+		}
 	});
 };
 
@@ -282,23 +382,8 @@ export const renderActiveTimers = () => {
 			row.appendChild(durationSpan);
 			row.appendChild(actionButtons);
 
-			// STEP 2: Create expandable notes section
-			const notesContainer = document.createElement("div");
-			notesContainer.id = `notes-container-${activity.id}`;
-			notesContainer.className = "task-notes-container ml-4 mt-1 py-1 bg-gray-50 rounded px-2 transition-all duration-200 hidden";
-
-			const notesTextarea = document.createElement("textarea");
-			notesTextarea.id = `notes-${activity.id}`;
-			notesTextarea.placeholder = "Add notes...";
-			notesTextarea.className = "w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none material-textarea";
-			notesTextarea.rows = "1";
-			notesTextarea.value = activity.notes || "";
-
-			notesContainer.appendChild(notesTextarea);
-
-			// Add to wrapper
+			// Add to wrapper (notes are now handled by modal)
 			rowContainer.appendChild(row);
-			rowContainer.appendChild(notesContainer);
 
 			// Event handlers
 			const toggleButton = row.querySelector(`[data-action="${toggleAction}"]`);
@@ -329,32 +414,9 @@ export const renderActiveTimers = () => {
 			if (notesButton) {
 				notesButton.addEventListener("click", (e) => {
 					e.stopPropagation();
-					notesContainer.classList.toggle("hidden");
-					if (!notesContainer.classList.contains("hidden")) {
-						notesTextarea.focus();
-					}
+					openNotesModal(activity.id);
 				});
 			}
-
-			// Notes textarea change handler
-			notesTextarea.addEventListener("blur", async () => {
-				const newNotes = notesTextarea.value;
-				if (state.activeTimers[activity.id]) {
-					const previousNotes = state.activeTimers[activity.id].notes;
-					state.activeTimers[activity.id].notes = newNotes;
-					try {
-						await saveActiveStateToServer();
-					} catch (error) {
-						console.error("Error saving notes:", error);
-						state.activeTimers[activity.id].notes = previousNotes;
-						notesTextarea.value = previousNotes;
-						showNotification(
-							"Failed to save notes. Please try again.",
-							"error"
-						);
-					}
-				}
-			});
 
 
 			taskList.appendChild(rowContainer);

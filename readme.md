@@ -30,7 +30,7 @@ TimeTrackly gives you:
 - **Never Lose Your Work:** With automatic session persistence, your active timers are safe even if you close your browser or restart your computer.
 - **100% Private & Offline:** All data is stored locally in human-readable JSON files. No clouds, no sign-ups, no data collection.
 - **Essential Controls:** Everything you need: Start, Pause, Resume, Stop (Save), and Delete (Discard) active tasks.
-- **Notes & Comments:** Add context to your work. Notes are auto-saved and included in your data exports.
+- **Notes & Comments:** Click the Notes button on any timer to open a modal where you can add context. Save when done, and notes are included in your data exports.
 - **Clean, Focused UI:** Collapsible sections for starting timers, viewing active work, and exporting data keep your workspace tidy.
 - **Instant Insights:** A dedicated Reports tab provides real-time visualizations, including Project Time Distribution and Daily Time Logged charts.
 - **Smart Input:** Autocomplete suggestions are populated from your recent entries and a simple, user-editable `mtt-suggestions.json` file.
@@ -41,7 +41,7 @@ TimeTrackly gives you:
 
 - Track multiple tasks simultaneously with real-time duration display
 - Start, Pause, Resume, Stop (Save), and Delete (Discard) controls for each timer
-- Add notes to tasks that auto-save and export with your data
+- Click Notes button to open a modal where you can add context to tasks; notes export with your data
 
 ### Reports & Analytics
 
