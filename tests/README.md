@@ -21,8 +21,9 @@ tests/
 ├── e2e/
 │   ├── test-backend-api.cjs  # Backend API tests (23 tests)
 │   └── test-ui-complete.cjs  # UI/UX E2E tests (12 scenarios)
-├── unit/                      # Unit tests (131 tests)
+├── unit/                      # Unit tests (143 tests)
 │   ├── setup.mjs              # Test environment setup (JSDOM)
+│   ├── test-charting-functions.mjs # Charting/statistics tests (12 tests)
 │   ├── test-state.mjs         # State management tests (25 tests)
 │   ├── test-utils.mjs         # Utility functions tests (43 tests)
 │   ├── test-ui.mjs            # UI operations tests (24 tests)
@@ -38,7 +39,8 @@ tests/
 | ------------- | ------- | -------------- |
 | Backend API   | 23/23   | ✅ All passing |
 | E2E UI        | 12/12   | ✅ All passing |
-| Frontend Unit | 131/131 | ✅ All passing |
+| Frontend Unit | 143/143 | ✅ All passing |
+| **Total**     | **178** | ✅ All passing |
 
 ### ✅ Unit Tests Status
 

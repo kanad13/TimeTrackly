@@ -89,7 +89,7 @@ The application runs locally using a simple Node.js server with zero external de
 
 | Component         | Technology                                                                 | Role                                                                             |
 | :---------------- | :------------------------------------------------------------------------- | :------------------------------------------------------------------------------- |
-| **Client**        | HTML5, ES6 Modules, Vanilla JavaScript, Tailwind CSS (CDN), Chart.js (CDN) | Modular UI with 7 ES6 modules for separation of concerns                         |
+| **Client**        | HTML5, ES6 Modules, Vanilla JavaScript, Tailwind CSS (CDN), Chart.js (CDN) | Modular UI with 8 ES6 modules for separation of concerns                         |
 | **Backend**       | Node.js (with built-in `http`, `fs.promises`, and `path` modules)          | Local web server with atomic file I/O and health monitoring                      |
 | **Data Storage**  | `mtt-data.json` & `mtt-active-state.json`                                  | JSON-based persistence for **historical** and **in-progress** data, respectively |
 | **Configuration** | `mtt-suggestions.json`                                                     | A user-editable JSON file for populating input suggestions                       |

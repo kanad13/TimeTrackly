@@ -10,7 +10,7 @@ TimeTrackly documentation is organized by purpose and audience. Start with what 
 ## Architecture & Design
 
 - [Architecture](/docs/architecture.md) - Complete technical architecture for developers. Explains the three core decisions (vanilla JS, JSON files, singleton state) alongside the system design, data flow, and implementation patterns.
-- [API Reference](/docs/api.md) - Frontend API reference. Function signatures, state structures, and module exports for all 7 ES6 modules.
+- [API Reference](/docs/api.md) - Frontend API reference. Function signatures, state structures, and module exports for all 8 ES6 modules.
 
 ## Development & Contribution
 
