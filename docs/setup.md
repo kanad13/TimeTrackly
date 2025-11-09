@@ -3,9 +3,8 @@
 - **TimeTrackly** runs as a local application on your machine using Node.js
 - The application features a modular architecture with robust error handling to ensure your data remains private and provides a consistent experience across all browsers
 
-![UI Initial Load](../assets/010-ui_initial_load.png)
-_The clean, Material Design-inspired interface after setup_
 ![UI Initial Load](/assets/010-ui_initial_load.png)
+_The clean, Material Design-inspired interface after setup_
 
 ## 1. Prerequisites
 
@@ -14,7 +13,7 @@ _The clean, Material Design-inspired interface after setup_
 
 ## 2. First-Time Setup
 
-- **Open Terminal:** Navigate to the project directory (`time-tracker`) in your terminal or command prompt
+- **Open Terminal:** Navigate to the project directory in your terminal or command prompt
 - **Install Dependencies:** Run the following command
   - Note: This project has no external dependencies, but this is a standard step
 
