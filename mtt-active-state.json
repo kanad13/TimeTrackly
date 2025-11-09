@@ -1,1 +1,10 @@
-{}
+{
+  "21b0f872-4784-4035-aaa3-a43821934b97": {
+    "project": "Project A",
+    "task": "Task X",
+    "startTime": "2025-11-09T15:35:22.872Z",
+    "accumulatedMs": 0,
+    "isPaused": false,
+    "notes": ""
+  }
+}
