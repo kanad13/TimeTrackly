@@ -66,9 +66,6 @@
 	<script src="https://cdn.tailwindcss.com"></script>
 	<!-- Load Chart.js for Visualization -->
 	<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
-	<!-- Load Cal-Heatmap for Weekly Patterns -->
-	<script src="https://cdn.jsdelivr.net/npm/cal-heatmap@4.2.4/dist/cal-heatmap.umd.min.js"></script>
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cal-heatmap@4.2.4/dist/cal-heatmap.css">
 	<!-- Material Icons -->
 	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 	<!-- Configure Font -->
@@ -451,15 +448,6 @@
 		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 	}
 
-	/* Cal-Heatmap Customization */
-	#cal-heatmap-container {
-		padding: 0;
-	}
-
-	#cal-heatmap-container svg {
-		margin: 0 auto;
-		display: block;
-	}
 	</style>
 </head>
 
@@ -637,14 +625,6 @@
 					</div>
 				</div>
 
-				<!-- Weekly Patterns Heatmap Collapsible Section -->
-				<div class="border rounded-lg overflow-hidden">
-					<div class="p-4 bg-gray-100 cursor-pointer hover:bg-gray-200 flex items-center justify-between chart-section-header" data-section="heatmap">
-						<h3 class="text-lg font-semibold text-gray-800">Weekly Work Patterns</h3>
-						<span class="material-icons transition-transform duration-200 chart-section-icon">expand_more</span>
-					</div>
-					<div class="chart-section-content bg-white p-6 overflow-hidden transition-all duration-300" style="max-height: 800px;">
-						<div id="cal-heatmap-container" style="overflow-x: auto;"></div>
 					</div>
 				</div>
 			</div>

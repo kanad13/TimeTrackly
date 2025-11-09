@@ -3,7 +3,7 @@
  *
  * Tests the new charting enhancement features:
  * - calculateStatistics()
- * - generateHeatmapData()
+
  * - Date range filtering
  * - Statistics accuracy
  */
@@ -16,8 +16,10 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// Load dummy data
-const dataPath = path.join(__dirname, '../../mtt-data.json');
+// Load test fixture data for charting tests
+// Note: Uses fixtures/charting-sample-data.json (263 entries over 79 days)
+// to properly test date range filtering and statistics calculations
+const dataPath = path.join(__dirname, '../fixtures/charting-sample-data.json');
 const dummyEntries = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
 
 /**
@@ -35,7 +37,7 @@ function calculateStatistics(daysBack = 7) {
   const cutoffDate = new Date(now.getTime() - daysBack * 24 * 60 * 60 * 1000);
 
   const entries = mockState.historicalEntries.filter((entry) => {
-    const entryDate = new Date(entry.completedAt);
+    const entryDate = new Date(entry.endTime);
     return entryDate >= cutoffDate;
   });
 
@@ -51,38 +53,38 @@ function calculateStatistics(daysBack = 7) {
   }
 
   const totalMinutes = entries.reduce(
-    (sum, entry) => sum + entry.durationMinutes,
+    (sum, entry) => sum + (entry.totalDurationMs / 60000),
     0
   );
   const totalHours = (totalMinutes / 60).toFixed(1);
 
   const uniqueDays = new Set(
-    entries.map((e) => new Date(e.completedAt).toLocaleDateString())
+    entries.map((e) => new Date(e.endTime).toLocaleDateString())
   ).size;
   const dailyAverage = (totalMinutes / uniqueDays / 60).toFixed(1);
 
   const dayMap = {};
   entries.forEach((entry) => {
-    const day = new Date(entry.completedAt).toLocaleDateString('en-US', {
+    const day = new Date(entry.endTime).toLocaleDateString('en-US', {
       weekday: 'long',
     });
-    dayMap[day] = (dayMap[day] || 0) + entry.durationMinutes;
+    dayMap[day] = (dayMap[day] || 0) + (entry.totalDurationMs / 60000);
   });
   const busiestDay =
     Object.entries(dayMap).sort((a, b) => b[1] - a[1])[0]?.[0] || '—';
 
   const projectMap = {};
   entries.forEach((entry) => {
-    const project = entry.project || entry.topic.split('/')[0].trim();
-    projectMap[project] = (projectMap[project] || 0) + entry.durationMinutes;
+    const project = entry.project;
+    projectMap[project] = (projectMap[project] || 0) + (entry.totalDurationMs / 60000);
   });
   const topProject =
     Object.entries(projectMap).sort((a, b) => b[1] - a[1])[0]?.[0] || '—';
 
   const today = new Date().toLocaleDateString();
   const todayMinutes = entries
-    .filter((e) => new Date(e.completedAt).toLocaleDateString() === today)
-    .reduce((sum, e) => sum + e.durationMinutes, 0);
+    .filter((e) => new Date(e.endTime).toLocaleDateString() === today)
+    .reduce((sum, e) => sum + (e.totalDurationMs / 60000), 0);
   const todayHours = (todayMinutes / 60).toFixed(1);
 
   const trackingDays = uniqueDays;
@@ -97,25 +99,7 @@ function calculateStatistics(daysBack = 7) {
   };
 }
 
-/**
- * Heatmap data generation (copied from reports.js for testing)
- */
-function generateHeatmapData(daysBack = 84) {
-  const data = {};
-  const cutoffDate = new Date();
-  cutoffDate.setDate(cutoffDate.getDate() - daysBack);
 
-  mockState.historicalEntries.forEach((entry) => {
-    const entryDate = new Date(entry.completedAt);
-    if (entryDate >= cutoffDate) {
-      const dateStr = entryDate.toISOString().split('T')[0];
-      const hours = entry.durationMinutes / 60;
-      data[dateStr] = (data[dateStr] || 0) + hours;
-    }
-  });
-
-  return data;
-}
 
 console.log('✅ Statistics & Charting Functions Test Suite\n');
 
@@ -223,81 +207,10 @@ test('calculateStatistics handles empty date range', () => {
   );
 });
 
-test('generateHeatmapData returns object with YYYY-MM-DD keys', () => {
-  const heatmapData = generateHeatmapData(84);
 
-  assert.strictEqual(typeof heatmapData, 'object');
 
-  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-  Object.keys(heatmapData).forEach((key) => {
-    assert.ok(
-      dateRegex.test(key),
-      `Key should be YYYY-MM-DD format, got: ${key}`
-    );
-  });
-});
 
-test('generateHeatmapData returns numeric hours values', () => {
-  const heatmapData = generateHeatmapData(84);
 
-  Object.values(heatmapData).forEach((hours) => {
-    assert.strictEqual(typeof hours, 'number');
-    assert.ok(hours >= 0, 'Hours should be non-negative');
-  });
-});
-
-test('generateHeatmapData covers expected date range', () => {
-  const heatmapData = generateHeatmapData(84);
-
-  const now = new Date();
-  const minDate = new Date();
-  minDate.setDate(minDate.getDate() - 84);
-
-  const dates = Object.keys(heatmapData).map(d => new Date(d));
-  const minDataDate = new Date(Math.min(...dates));
-  const maxDataDate = new Date(Math.max(...dates));
-
-  assert.ok(
-    maxDataDate <= now,
-    'Max date should not be in the future'
-  );
-  assert.ok(
-    minDataDate >= minDate,
-    'Data should be within last 84 days'
-  );
-});
-
-test('generateHeatmapData sums entries for same day', () => {
-  const heatmapData = generateHeatmapData(84);
-  const sampleDate = Object.keys(heatmapData)[0];
-  const sampleHours = heatmapData[sampleDate];
-
-  // Manually verify one day's data is summed correctly
-  const dayEntries = mockState.historicalEntries.filter(e => {
-    const entryDate = e.completedAt.split('T')[0];
-    return entryDate === sampleDate;
-  });
-
-  const expectedHours = dayEntries.reduce((sum, e) => sum + e.durationMinutes / 60, 0);
-  const tolerance = 0.01; // Allow for floating point errors
-
-  assert.ok(
-    Math.abs(sampleHours - expectedHours) < tolerance,
-    `Hours for ${sampleDate} should be summed correctly. Expected: ${expectedHours}, got: ${sampleHours}`
-  );
-});
-
-test('generateHeatmapData respects daysBack parameter', () => {
-  const data7 = generateHeatmapData(7);
-  const data30 = generateHeatmapData(30);
-  const data84 = generateHeatmapData(84);
-
-  // Longer ranges should have more or equal days (unless data is sparse)
-  assert.ok(
-    Object.keys(data84).length >= Object.keys(data7).length,
-    '84-day data should have >= days than 7-day data'
-  );
-});
 
 test('statistics for all time have realistic values', () => {
   const stats = calculateStatistics(365);
@@ -326,17 +239,17 @@ test('statistics project totals sum to total hours', () => {
   const cutoffDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
 
   const entries = mockState.historicalEntries.filter((entry) => {
-    const entryDate = new Date(entry.completedAt);
+    const entryDate = new Date(entry.endTime);
     return entryDate >= cutoffDate;
   });
 
   const projectMap = {};
   entries.forEach((entry) => {
-    const project = entry.project || entry.topic.split('/')[0].trim();
-    projectMap[project] = (projectMap[project] || 0) + entry.durationMinutes;
+    const project = entry.project;
+    projectMap[project] = (projectMap[project] || 0) + (entry.totalDurationMs / 3600000);
   });
 
-  const summedHours = Object.values(projectMap).reduce((sum, minutes) => sum + minutes / 60, 0);
+  const summedHours = Object.values(projectMap).reduce((sum, hours) => sum + hours, 0);
   const tolerance = 0.1;
 
   assert.ok(

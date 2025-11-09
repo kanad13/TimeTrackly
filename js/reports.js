@@ -128,7 +128,6 @@ export const renderReportsView = () => {
 		const defaultRange = 7;
 		updateStatisticsDisplay(defaultRange);
 		renderChartsForRange(defaultRange);
-		renderHeatmap(84); // Last ~12 weeks
 
 		loadingEl?.classList.add("hidden");
 		contentEl?.classList.remove("hidden");
@@ -154,7 +153,7 @@ function calculateStatistics(daysBack = 7) {
 
 	// Filter entries within date range
 	const entries = state.historicalEntries.filter((entry) => {
-		const entryDate = new Date(entry.completedAt);
+		const entryDate = new Date(entry.endTime);
 		return entryDate >= cutoffDate;
 	});
 
@@ -171,24 +170,24 @@ function calculateStatistics(daysBack = 7) {
 
 	// Total hours
 	const totalMinutes = entries.reduce(
-		(sum, entry) => sum + entry.durationMinutes,
+		(sum, entry) => sum + (entry.totalDurationMs / 60000),
 		0
 	);
 	const totalHours = (totalMinutes / 60).toFixed(1);
 
 	// Daily average
 	const uniqueDays = new Set(
-		entries.map((e) => new Date(e.completedAt).toLocaleDateString())
+		entries.map((e) => new Date(e.endTime).toLocaleDateString())
 	).size;
 	const dailyAverage = (totalMinutes / uniqueDays / 60).toFixed(1);
 
 	// Busiest day (most hours)
 	const dayMap = {};
 	entries.forEach((entry) => {
-		const day = new Date(entry.completedAt).toLocaleDateString("en-US", {
+		const day = new Date(entry.endTime).toLocaleDateString("en-US", {
 			weekday: "long",
 		});
-		dayMap[day] = (dayMap[day] || 0) + entry.durationMinutes;
+		dayMap[day] = (dayMap[day] || 0) + (entry.totalDurationMs / 60000);
 	});
 	const busiestDay =
 		Object.entries(dayMap).sort((a, b) => b[1] - a[1])[0]?.[0] || "—";
@@ -196,8 +195,8 @@ function calculateStatistics(daysBack = 7) {
 	// Top project
 	const projectMap = {};
 	entries.forEach((entry) => {
-		const project = entry.project || entry.topic.split("/")[0].trim();
-		projectMap[project] = (projectMap[project] || 0) + entry.durationMinutes;
+		const project = entry.project;
+		projectMap[project] = (projectMap[project] || 0) + (entry.totalDurationMs / 60000);
 	});
 	const topProject =
 		Object.entries(projectMap).sort((a, b) => b[1] - a[1])[0]?.[0] || "—";
@@ -205,8 +204,8 @@ function calculateStatistics(daysBack = 7) {
 	// Today's hours
 	const today = new Date().toLocaleDateString();
 	const todayMinutes = entries
-		.filter((e) => new Date(e.completedAt).toLocaleDateString() === today)
-		.reduce((sum, e) => sum + e.durationMinutes, 0);
+		.filter((e) => new Date(e.endTime).toLocaleDateString() === today)
+		.reduce((sum, e) => sum + (e.totalDurationMs / 60000), 0);
 	const todayHours = (todayMinutes / 60).toFixed(1);
 
 	// Tracking days (days with at least 1 entry)
@@ -244,75 +243,10 @@ function updateStatisticsDisplay(daysBack = 7) {
 }
 
 /**
- * Format data for Cal-Heatmap (daily hours logged)
- * @returns {object} Data in Cal-Heatmap format
+ * Weekly work patterns visualization - planned for future enhancement
+ * Currently removed due to Cal-Heatmap dependency on D3 libraries
+ * Future: Either add D3 dependencies or use alternative visualization library
  */
-function generateHeatmapData(daysBack = 84) {
-	// Cal-Heatmap expects data as: { "YYYY-MM-DD": value }
-	const data = {};
-	const cutoffDate = new Date();
-	cutoffDate.setDate(cutoffDate.getDate() - daysBack);
-
-	state.historicalEntries.forEach((entry) => {
-		const entryDate = new Date(entry.completedAt);
-		if (entryDate >= cutoffDate) {
-			const dateStr = entryDate.toISOString().split("T")[0]; // YYYY-MM-DD
-			const hours = entry.durationMinutes / 60;
-			data[dateStr] = (data[dateStr] || 0) + hours;
-		}
-	});
-
-	return data;
-}
-
-/**
- * Render Cal-Heatmap for weekly patterns
- */
-function renderHeatmap(daysBack = 84) {
-	const container = document.getElementById("cal-heatmap-container");
-	if (!container || !window.CalHeatmap) return;
-
-	// Clear previous chart
-	container.innerHTML = "";
-
-	const data = generateHeatmapData(daysBack);
-
-	const calHeatmap = new window.CalHeatmap();
-	calHeatmap.paint(
-		{
-			source: data,
-			domain: { type: "month", label: "MMM" },
-			range: 4,
-			scale: {
-				color: ["#ebedf0", "#c6e48b", "#7bc96f", "#239a3b", "#196127"],
-			},
-			subDomainTextFormat: "%Y-%m-%d\n%v h",
-			itemSelector: "#cal-heatmap-container",
-		},
-		[
-			{
-				name: "fill",
-				criteria: (x) => x > 0 && x <= 2,
-				color: "#c6e48b",
-			},
-			{
-				name: "fill",
-				criteria: (x) => x > 2 && x <= 4,
-				color: "#7bc96f",
-			},
-			{
-				name: "fill",
-				criteria: (x) => x > 4 && x <= 6,
-				color: "#239a3b",
-			},
-			{
-				name: "fill",
-				criteria: (x) => x > 6,
-				color: "#196127",
-			},
-		]
-	);
-}
 
 /**
  * Render existing charts (doughnut and bar) for a specific range
@@ -322,7 +256,7 @@ function renderChartsForRange(daysBack) {
 	cutoffDate.setDate(cutoffDate.getDate() - daysBack);
 
 	const filteredEntries = state.historicalEntries.filter(
-		(entry) => new Date(entry.completedAt) >= cutoffDate
+		(entry) => new Date(entry.endTime) >= cutoffDate
 	);
 
 	// Destroy existing charts

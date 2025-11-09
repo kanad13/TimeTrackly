@@ -178,9 +178,10 @@ npm start       # Start server
 
 Located in `tests/fixtures/`, these provide sample data for tests:
 
-- `sample-data.json` - Historical time entries
+- `sample-data.json` - Historical time entries (3 entries for basic API tests)
 - `sample-active-state.json` - Active timer state
 - `sample-suggestions.json` - Task suggestions
+- `charting-sample-data.json` - Comprehensive dataset (263 entries, 79 days) for charting/reports tests
 
 ### Using Fixtures in Tests:
 
@@ -191,6 +192,16 @@ const path = require("path");
 const fixture = JSON.parse(
 	fs.readFileSync(path.join(__dirname, "../fixtures/sample-data.json"))
 );
+```
+
+### Generating Sample Data for Development:
+
+To populate the Reports tab with realistic charts for manual testing:
+
+```bash
+node scripts/generate-dummy-data.cjs
+# Generates 260+ entries over 80+ days
+# Restart server to see populated charts
 ```
 
 ---

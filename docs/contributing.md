@@ -32,6 +32,12 @@ npm run test:api          # Backend API tests
 # 4. Manual testing (optional but recommended)
 npm run dev               # Start with verbose logging
 # Open browser, test the specific feature you changed
+
+# 5. Loading sample data for chart/report testing
+node scripts/generate-dummy-data.cjs
+# Generates 260+ entries over 80+ days with realistic project distribution
+# Restart server to see populated Reports tab with charts
+# Note: This overwrites mtt-data.json - commit/stash changes first if needed
 ```
 
 ### 2. When to Update Documentation

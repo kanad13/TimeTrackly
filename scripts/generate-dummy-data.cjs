@@ -72,20 +72,19 @@ function generateDummyData() {
       endTime.setTime(endTime.getTime() + durationMs);
 
       entries.push({
-        id: entryId++,
         project: project.name,
-        topic: `${project.name} / Task ${entryId}`,
-        durationMinutes: durationMinutes,
+        task: `Task ${entryId}`,
         totalDurationMs: durationMs,
-        startTime: startTime.toISOString(),
+        durationSeconds: Math.round(durationMs / 1000),
+        createdAt: startTime.toISOString(),
         endTime: endTime.toISOString(),
-        completedAt: endTime.toISOString(),
         notes: `Sample ${project.name} task`
       });
+      entryId++;
     });
   }
 
-  return entries.sort((a, b) => new Date(a.completedAt) - new Date(b.completedAt));
+  return entries.sort((a, b) => new Date(a.endTime) - new Date(b.endTime));
 }
 
 /**
@@ -94,22 +93,22 @@ function generateDummyData() {
 function calculateStats(entries) {
   if (entries.length === 0) return null;
 
-  const totalMinutes = entries.reduce((sum, e) => sum + e.durationMinutes, 0);
+  const totalMinutes = entries.reduce((sum, e) => sum + (e.totalDurationMs / 60000), 0);
   const totalHours = totalMinutes / 60;
 
   const uniqueDays = new Set(
-    entries.map(e => new Date(e.completedAt).toLocaleDateString())
+    entries.map(e => new Date(e.endTime).toLocaleDateString())
   ).size;
 
   const projectStats = {};
   entries.forEach(e => {
-    projectStats[e.project] = (projectStats[e.project] || 0) + e.durationMinutes;
+    projectStats[e.project] = (projectStats[e.project] || 0) + (e.totalDurationMs / 60000);
   });
 
   const dayStats = {};
   entries.forEach(e => {
-    const day = new Date(e.completedAt).toLocaleDateString('en-US', { weekday: 'long' });
-    dayStats[day] = (dayStats[day] || 0) + e.durationMinutes;
+    const day = new Date(e.endTime).toLocaleDateString('en-US', { weekday: 'long' });
+    dayStats[day] = (dayStats[day] || 0) + (e.totalDurationMs / 60000);
   });
 
   return {
