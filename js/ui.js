@@ -314,7 +314,7 @@ export const renderActiveTimers = () => {
 
 		const projectHeader = document.createElement("div");
 		projectHeader.className =
-			"project-header flex justify-between items-center p-4 bg-gray-100 cursor-pointer rounded-lg font-semibold text-gray-800 border-b border-gray-300";
+			"project-header flex justify-between items-center p-3 bg-gray-100 cursor-pointer rounded-lg font-semibold text-gray-800 border-b border-gray-300";
 		projectHeader.setAttribute("data-target", projectId);
 
 		// Create header content
@@ -396,12 +396,12 @@ export const renderActiveTimers = () => {
 		tasks.forEach((activity) => {
 			// STEP 1: Create compact horizontal task row
 			const rowContainer = document.createElement("div");
-			rowContainer.className = "task-row-wrapper flex flex-col ml-4 mb-3";
+			rowContainer.className = "task-row-wrapper flex flex-col ml-4 mb-2";
 
 			const row = document.createElement("div");
 			row.id = `timer-row-${activity.id}`;
 			row.setAttribute("data-timer-id", activity.id);
-			row.className = `task-row flex items-center gap-3 px-4 py-3 rounded-lg elevation-1 border border-gray-200 bg-white cursor-pointer transition-all duration-200 hover:bg-gray-50 group`;
+			row.className = `task-row flex items-center gap-2 px-3 py-2.5 rounded-lg elevation-1 border border-gray-200 bg-white cursor-pointer transition-all duration-200 hover:bg-gray-50 group`;
 
 			if (activity.isPaused) {
 				row.classList.add("task-row-paused");

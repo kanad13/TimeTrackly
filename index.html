@@ -421,20 +421,20 @@
 	</style>
 </head>
 
-<body class="bg-gray-100 min-h-screen p-2 sm:p-4">
+<body class="bg-gray-100 min-h-screen p-2 sm:p-3 md:p-4">
 
-	<div id="app" class="max-w-5xl mx-auto bg-white elevation-1 rounded-lg p-4 sm:p-6">
-		<h1 class="text-4xl font-light text-gray-900 mb-8 text-center tracking-tight">Time Trackly</h1>
+	<div id="app" class="w-full max-w-7xl mx-auto bg-white elevation-1 rounded-lg p-3 sm:p-4 md:p-5">
+		<h1 class="text-3xl font-light text-gray-900 mb-5 text-center tracking-tight">Time Trackly</h1>
 
 		<!-- Tab Navigation -->
-		<div class="flex border-b-2 border-gray-200 mb-8">
+		<div class="flex border-b-2 border-gray-200 mb-5">
 			<button id="tab-tracker" data-tab="tracker"
-				class="tab-button active flex-1 py-4 text-center text-gray-500 hover:text-gray-900 text-base">
+				class="tab-button active flex-1 py-3 text-center text-gray-500 hover:text-gray-900 text-sm sm:text-base">
 				<span class="material-icons align-middle mr-2 text-xl">schedule</span>
 				Create & Track Tasks
 			</button>
 			<button id="tab-reports" data-tab="reports"
-				class="tab-button flex-1 py-4 text-center text-gray-500 hover:text-gray-900 text-base">
+				class="tab-button flex-1 py-3 text-center text-gray-500 hover:text-gray-900 text-sm sm:text-base">
 				<span class="material-icons align-middle mr-2 text-xl">analytics</span>
 				Anayze Time Reports
 			</button>
@@ -443,9 +443,9 @@
 		<!-- Content Views -->
 		<div id="view-tracker" class="content-view">
 			<!-- Data Entry Section -->
-			<div class="mb-6">
+			<div class="mb-4">
 				<div id="data-entry-header"
-					class="flex justify-between items-center p-3 google-blue text-white cursor-pointer rounded-t-lg font-medium mb-0">
+					class="flex justify-between items-center p-2.5 google-blue text-white cursor-pointer rounded-t-lg font-medium mb-0">
 					<div class="flex items-center space-x-3">
 						<span id="icon-data-entry" class="material-icons transition-transform duration-200">chevron_right</span>
 						<span class="text-lg">Start New Timer</span>
@@ -453,7 +453,7 @@
 				</div>
 				<div id="data-entry-content"
 					class="transition-all duration-300 ease-in-out overflow-hidden h-0 border border-t-0 border-gray-200 rounded-b-lg">
-					<div class="p-4">
+					<div class="p-3">
 						<p class="text-sm text-gray-600 mb-4 text-center">Format: <span
 								class="font-mono bg-white px-2 py-1 rounded-md elevation-1">Project / Task</span></p>
 
@@ -480,9 +480,9 @@
 			</div>
 
 			<!-- Active Timers Display -->
-			<div class="mb-6">
+			<div class="mb-4">
 				<div id="active-timers-header"
-					class="flex justify-between items-center p-3 google-green text-white cursor-pointer rounded-t-lg font-medium mb-0">
+					class="flex justify-between items-center p-2.5 google-green text-white cursor-pointer rounded-t-lg font-medium mb-0">
 					<div class="flex items-center space-x-3">
 						<span id="icon-active-timers"
 							class="material-icons rotate-90 transition-transform duration-200">chevron_right</span>
@@ -492,9 +492,9 @@
 				<div id="active-timers-content"
 					class="transition-all duration-300 ease-in-out overflow-hidden border border-t-0 border-gray-200 rounded-b-lg"
 					style="height: auto;">
-					<div id="active-timers-list" class="space-y-3 p-4 min-h-[100px]">
-						<div id="no-active-message" class="text-gray-500 text-center py-8 flex flex-col items-center">
-							<span class="material-icons text-5xl text-gray-300 mb-3">timer_off</span>
+					<div id="active-timers-list" class="space-y-2 p-3 min-h-[80px]">
+						<div id="no-active-message" class="text-gray-500 text-center py-6 flex flex-col items-center">
+							<span class="material-icons text-5xl text-gray-300 mb-2">timer_off</span>
 							<p>No tasks currently running</p>
 						</div>
 					</div>
@@ -502,9 +502,9 @@
 			</div>
 
 			<!-- Data Export Section -->
-			<div class="mt-6">
+			<div class="mt-4">
 				<div id="data-export-header"
-					class="flex justify-between items-center p-3 bg-gray-600 text-white cursor-pointer rounded-t-lg font-medium mb-0">
+					class="flex justify-between items-center p-2.5 bg-gray-600 text-white cursor-pointer rounded-t-lg font-medium mb-0">
 					<div class="flex items-center space-x-3">
 						<span id="icon-data-export" class="material-icons transition-transform duration-200">chevron_right</span>
 						<span class="text-lg">Data Export</span>
@@ -512,7 +512,7 @@
 				</div>
 				<div id="data-export-content"
 					class="transition-all duration-300 ease-in-out overflow-hidden h-0 border border-t-0 border-gray-200 rounded-b-lg">
-					<div class="p-4">
+					<div class="p-3">
 						<button id="export-button"
 							class="w-full bg-gray-700 text-white md-button py-3 px-6 rounded-lg hover:bg-gray-800">
 							<span class="material-icons align-middle mr-2">download</span>
@@ -541,7 +541,7 @@
 		</div>
 
 		<!-- Status and ID Display -->
-		<p class="text-sm text-center text-gray-400 mt-6" id="user-id-display">User ID: Loading...</p>
+		<p class="text-sm text-center text-gray-400 mt-4" id="user-id-display">User ID: Loading...</p>
 	</div>
 
 	<!-- Notes Modal -->
