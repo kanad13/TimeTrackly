@@ -66,6 +66,9 @@
 	<script src="https://cdn.tailwindcss.com"></script>
 	<!-- Load Chart.js for Visualization -->
 	<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+	<!-- Load Cal-Heatmap for Weekly Patterns -->
+	<script src="https://cdn.jsdelivr.net/npm/cal-heatmap@4.2.4/dist/cal-heatmap.umd.min.js"></script>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cal-heatmap@4.2.4/dist/cal-heatmap.css">
 	<!-- Material Icons -->
 	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 	<!-- Configure Font -->
@@ -418,6 +421,45 @@
 	.modal-footer-btn.secondary:hover {
 		background-color: #E5E7EB;
 	}
+
+	/* Chart Section Collapsible Styles */
+	.chart-section-header {
+		transition: background-color 0.2s ease;
+	}
+
+	.chart-section-icon {
+		transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	}
+
+	.chart-section-header.collapsed ~ .chart-section-content {
+		max-height: 0 !important;
+		padding: 0 !important;
+		overflow: hidden;
+	}
+
+	.chart-section-header.collapsed .chart-section-icon {
+		transform: rotate(-90deg);
+	}
+
+	/* Statistics Card Grid */
+	.stat-card {
+		transition: transform 0.2s ease, box-shadow 0.2s ease;
+	}
+
+	.stat-card:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+	}
+
+	/* Cal-Heatmap Customization */
+	#cal-heatmap-container {
+		padding: 0;
+	}
+
+	#cal-heatmap-container svg {
+		margin: 0 auto;
+		display: block;
+	}
 	</style>
 </head>
 
@@ -527,15 +569,83 @@
 			<div id="reports-loading" class="text-center text-gray-500 py-12">Loading historical data...</div>
 			<div id="reports-error" class="text-center text-red-500 py-12 hidden">Error loading reports. Check console.</div>
 
-			<div id="reports-content" class="space-y-12 hidden">
-				<h3 class="text-2xl font-semibold text-gray-700 border-b pb-2">Time Distribution by Project</h3>
-				<div class="flex justify-center h-80">
-					<canvas id="project-pie-chart"></canvas>
+			<div id="reports-content" class="space-y-8 hidden">
+				<!-- Date Range Selector -->
+				<div class="flex gap-2 justify-center border-b pb-4">
+					<button class="date-range-btn active px-4 py-2 text-sm font-medium text-blue-600 border-b-2 border-blue-600" data-range="7">
+						Last 7 Days
+					</button>
+					<button class="date-range-btn px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900" data-range="30">
+						Last 30 Days
+					</button>
+					<button class="date-range-btn px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900" data-range="365">
+						All Time
+					</button>
 				</div>
 
-				<h3 class="text-2xl font-semibold text-gray-700 border-b pb-2 pt-6">Daily Time Logged (Last 7 Days)</h3>
-				<div class="h-80">
-					<canvas id="daily-bar-chart"></canvas>
+				<!-- Summary Statistics -->
+				<div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+					<div class="p-4 bg-blue-50 rounded-lg border border-blue-200 stat-card">
+						<p class="text-xs font-medium text-blue-600 uppercase">This Period</p>
+						<p class="text-2xl font-bold text-blue-900 mt-2" id="stat-total-hours">0 h</p>
+					</div>
+					<div class="p-4 bg-green-50 rounded-lg border border-green-200 stat-card">
+						<p class="text-xs font-medium text-green-600 uppercase">Daily Avg</p>
+						<p class="text-2xl font-bold text-green-900 mt-2" id="stat-daily-avg">0 h</p>
+					</div>
+					<div class="p-4 bg-purple-50 rounded-lg border border-purple-200 stat-card">
+						<p class="text-xs font-medium text-purple-600 uppercase">Busiest Day</p>
+						<p class="text-2xl font-bold text-purple-900 mt-2" id="stat-busiest-day">—</p>
+					</div>
+					<div class="p-4 bg-orange-50 rounded-lg border border-orange-200 stat-card">
+						<p class="text-xs font-medium text-orange-600 uppercase">Top Project</p>
+						<p class="text-lg font-bold text-orange-900 mt-2 truncate" id="stat-top-project">—</p>
+					</div>
+					<div class="p-4 bg-pink-50 rounded-lg border border-pink-200 stat-card">
+						<p class="text-xs font-medium text-pink-600 uppercase">Today</p>
+						<p class="text-2xl font-bold text-pink-900 mt-2" id="stat-today-hours">0 h</p>
+					</div>
+					<div class="p-4 bg-gray-50 rounded-lg border border-gray-200 stat-card">
+						<p class="text-xs font-medium text-gray-600 uppercase">Tracking Days</p>
+						<p class="text-2xl font-bold text-gray-900 mt-2" id="stat-tracking-days">0</p>
+					</div>
+				</div>
+
+				<!-- Project Distribution Collapsible Section -->
+				<div class="border rounded-lg overflow-hidden">
+					<div class="p-4 bg-gray-100 cursor-pointer hover:bg-gray-200 flex items-center justify-between chart-section-header" data-section="project-dist">
+						<h3 class="text-lg font-semibold text-gray-800">Project Time Distribution</h3>
+						<span class="material-icons transition-transform duration-200 chart-section-icon">expand_more</span>
+					</div>
+					<div class="chart-section-content bg-white p-6 overflow-hidden transition-all duration-300" style="max-height: 500px;">
+						<div class="flex justify-center h-80">
+							<canvas id="project-pie-chart"></canvas>
+						</div>
+					</div>
+				</div>
+
+				<!-- Daily Trends Collapsible Section -->
+				<div class="border rounded-lg overflow-hidden">
+					<div class="p-4 bg-gray-100 cursor-pointer hover:bg-gray-200 flex items-center justify-between chart-section-header" data-section="daily-trends">
+						<h3 class="text-lg font-semibold text-gray-800">Daily Time Logged</h3>
+						<span class="material-icons transition-transform duration-200 chart-section-icon">expand_more</span>
+					</div>
+					<div class="chart-section-content bg-white p-6 overflow-hidden transition-all duration-300" style="max-height: 500px;">
+						<div class="h-80">
+							<canvas id="daily-bar-chart"></canvas>
+						</div>
+					</div>
+				</div>
+
+				<!-- Weekly Patterns Heatmap Collapsible Section -->
+				<div class="border rounded-lg overflow-hidden">
+					<div class="p-4 bg-gray-100 cursor-pointer hover:bg-gray-200 flex items-center justify-between chart-section-header" data-section="heatmap">
+						<h3 class="text-lg font-semibold text-gray-800">Weekly Work Patterns</h3>
+						<span class="material-icons transition-transform duration-200 chart-section-icon">expand_more</span>
+					</div>
+					<div class="chart-section-content bg-white p-6 overflow-hidden transition-all duration-300" style="max-height: 800px;">
+						<div id="cal-heatmap-container" style="overflow-x: auto;"></div>
+					</div>
 				</div>
 			</div>
 		</div>
